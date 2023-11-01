@@ -164,3 +164,49 @@ Theorem op_eq_v_mt : forall(A : Formula),
 Proof.
   intros. apply smplgemo. apply op_eq_v_mts.
 Qed.
+
+(* 2. *)
+(*
+  There is always one more variable occurence than binary operators in a formula
+  > For all A in F : v(A) = 1 + bop(A)
+*)
+
+Lemma atomic_v_eq_op_bop : forall(n : nat),
+  v(Atomic n) = 1 + bop(Atomic n).
+Proof.
+  intros. simpl. reflexivity.
+Qed.
+
+Lemma unary_v_eq_op_bop : forall(A : Formula),
+  v(A) = 1 + bop(A) ->
+  v(Unary A) = 1 + bop(Unary A).
+Proof.
+  intros. simpl. apply H.
+Qed.
+
+Lemma eq_add : forall(n1 n2 n3 n4 : nat),
+  n1 = 1 + n2 ->
+  n3 = 1 + n4 ->
+  n1 + n3 = 2 + n2 + n4.
+Proof.
+  intros.
+  lia.
+Qed.
+
+Lemma binary_v_eq_op_bop : forall(A B: Formula),
+  v(A) = 1 + bop(A) ->
+  v(B) = 1 + bop(B) ->
+  v(Binary A B) = 1 + bop(Binary A B).
+Proof.
+  intros. simpl.
+  apply eq_add; apply H + apply H0.
+Qed.
+  
+Theorem v_eq_op_bop : forall(A : Formula),
+  v(A) = 1 + bop(A).
+Proof.
+  intros. induction A.
+  - apply atomic_v_eq_op_bop.
+  - apply unary_v_eq_op_bop. apply IHA.
+  - apply binary_v_eq_op_bop; apply IHA1 + apply IHA2.
+Qed.
