@@ -1,4 +1,4 @@
-(* Shee 0 *)
+(* Sheet 0 *)
 
 (* Let's start with some definitions *)
 
@@ -51,3 +51,49 @@ Fixpoint bop (A : Formula) : nat :=
     | Unary phi => bop(phi)
     | Binary phi1 phi2 => 1 + bop(phi1) + bop(phi2)
     end.
+
+(* Exercise 5 *)
+
+(* 
+    Let F be the set of all propositional formulas.
+    Prove the following statements by using structural induction over the structure of propositional formulas:
+    Every propositional formula A in F contains the same number of parentheses-pairs and operators:
+    > For all A in F : k(A) =  op(A)
+*)
+
+(* Let's define the base case with a formula consisting of one variable*)
+Lemma atomic_k_eq_op : forall(n : nat),
+  k(Atomic n) = op(Atomic n).
+Proof.
+intros A. simpl. trivial.
+Qed.
+
+(* Now we proof it for unary operators *)
+Lemma unary_k_eq_op : forall(A : Formula),
+  k(A) = op(A) ->
+  k(Unary A) = op(Unary A).
+Proof.
+  intros. simpl. apply f_equal. apply H.
+Qed.
+
+(* And at last for binarys *)
+Lemma binary_k_eq_op : forall(A B : Formula),
+  k(A) = op(A) ->
+  k(B) = op(B) ->
+  k(Binary A B) = op(Binary A B).
+Proof.
+  intros. simpl. 
+  apply f_equal.
+  rewrite H. rewrite H0.
+  trivial.
+Qed.
+
+(*Now we can prove our theorem via induction*)
+Theorem k_eq_op : forall(A : Formula),
+  k(A) = op(A).
+Proof.
+  intros. induction A.
+  - apply atomic_k_eq_op.
+  - apply unary_k_eq_op. apply IHA.
+  - apply binary_k_eq_op; apply IHA1 + apply IHA2.
+Qed.
