@@ -1,4 +1,6 @@
-(* Sheet 0 *)
+Require Import Lia.
+Require Import PeanoNat.
+(* Shee 0 *)
 
 (* Let's start with some definitions *)
 
@@ -96,4 +98,69 @@ Proof.
   - apply atomic_k_eq_op.
   - apply unary_k_eq_op. apply IHA.
   - apply binary_k_eq_op; apply IHA1 + apply IHA2.
+Qed.
+
+(* Exercise 6 *)
+
+(* 1. *)
+(*
+  Let n be the number of variable occurences in A in F. 
+  Then the number of operators in A is at least n-2:
+  > For all A in F : op(A) >= v(A) - 2
+*)
+
+Lemma atomic_op_eq_v_mt : forall(n : nat),
+  op(Atomic n) >= v(Atomic n) - 1.
+Proof.
+  intros. simpl. unfold ge. apply le_n.
+Qed.
+
+(* Instead of proofing for -2 we proof the stronger -1 *)
+Lemma unary_op_eq_v_mt : forall(A : Formula),
+  op(A) >= v(A) - 1 ->
+  op(Unary A) >= v(Unary A) - 1.
+Proof.
+  intros. simpl. apply le_S. apply H.
+Qed.
+
+Lemma binary_op_eq_v_mt : forall(A B: Formula),
+  op(A) >= v(A) - 1 ->
+  op(B) >= v(B) - 1 ->
+  op(Binary A B) >= v(Binary A B) - 1.
+Proof.
+  intros. simpl. lia.
+Qed.
+  
+(* Helping lemma to get from the stronger to the weaker*)
+Lemma smplge : forall(n1 n2 : nat),
+  n1 >= n2 ->
+  n1 >= pred n2.
+Proof.
+  intros. lia.
+Qed.
+
+
+
+(* Proofing the stronger theorem op(A) >= v(A) - 1*)
+Theorem op_eq_v_mts : forall(A : Formula),
+  op(A) >= v(A) - 1.
+Proof.
+  intros. induction A.
+  - apply atomic_op_eq_v_mt.
+  - apply unary_op_eq_v_mt. apply IHA.
+  - apply binary_op_eq_v_mt; apply IHA1 + apply IHA2.
+Qed.
+
+(* Proof of the actuall theorem using the helper smplgemo *)
+Lemma smplgemo : forall(n1 n2 : nat),
+  n1 >= n2 - 1 ->
+  n1 >= n2 - 2.
+Proof.
+  intros. simpl. lia.
+Qed.
+
+Theorem op_eq_v_mt : forall(A : Formula),
+  op(A) >= v(A) -2.
+Proof.
+  intros. apply smplgemo. apply op_eq_v_mts.
 Qed.
