@@ -13,9 +13,9 @@ Inductive Formula : Type :=
 (* Given a formula A, return the number of variable occurences *)
 Fixpoint v (A : Formula) : nat :=
     match A with
-    | Atomic _ -> 1
-    | Unary phi -> v(phi)
-    | Binary phi1 phi2 -> v(phi1) + v(phi2)
+    | Atomic _ => 1
+    | Unary phi => v(phi)
+    | Binary phi1 phi2 => v(phi1) + v(phi2)
     end.
 
 (* k(A) *)
@@ -29,25 +29,25 @@ Fixpoint v (A : Formula) : nat :=
 
 Fixpoint k(A : Formula) : nat :=
     match A with
-    | Atomic _ -> 0
-    | Unary phi -> 1 + k(phi)
-    | Binary phi1 phi2 -> 1 + k(phi1) + k(phi2)
+    | Atomic _ => 0
+    | Unary phi => 1 + k(phi)
+    | Binary phi1 phi2 => 1 + k(phi1) + k(phi2)
     end.
 
 (* op(A) *)
 (* Given a formula A, return the number of operators in the formula *)
 Fixpoint op (A : Formula) : nat :=
     match A with
-    | Atomic _ -> 0
-    | Unary phi -> 1 + op(phi)
-    | Binary phi1 phi2 -> 1 + op(phi1) + op(phi2)
+    | Atomic _ => 0
+    | Unary phi => 1 + op(phi)
+    | Binary phi1 phi2 => 1 + op(phi1) + op(phi2)
     end.
 
 (* bop(A) *)
 (* Given a formula A, return the number of binary operators in the formula*)
 Fixpoint bop (A : Formula) : nat :=
     match A with
-    | Atomic _ -> 0
-    | Unary phi -> bop(phi)
-    | Binary phi1 phi2 -> 1 + bop(phi1) + bop(phi2)
+    | Atomic _ => 0
+    | Unary phi => bop(phi)
+    | Binary phi1 phi2 => 1 + bop(phi1) + bop(phi2)
     end.
