@@ -70,6 +70,15 @@ class Variable(Formula):
 		return self.name
 		
 
+    def get_variables(self):
+        """Return all variables in the formula
+
+        Returns:
+            Set[str]: The variables as a set
+        """
+        return {self.name}
+        
+
 class Implies(Formula):
 	def __init__(self,form1, form2):
 		self.form1 = form1
@@ -103,7 +112,16 @@ class Implies(Formula):
 		return self.form2
 		
 	
-				
+    def get_variables(self):
+        """Return all variables in the formula
+
+        Returns:
+            Set[str]: The variables as a set
+        """
+        return self.form1.get_variables().union(self.form2.get_variables())
+        
+    
+                
 class Not(Formula):
 	def __init__(self, form):
 		self.form = form
@@ -127,6 +145,15 @@ class Not(Formula):
 		"""
 		return self.form
 	
+
+    def get_variables(self):
+        """Return all variables in the formula
+
+        Returns:
+            Set[str]: The variables as a set
+        """
+        return self.form.get_variables()
+    
 class And(Formula):
 	def __init__(self,form1, form2):
 		self.form1 = form1
@@ -144,6 +171,14 @@ class And(Formula):
 	def get_right(self):
 		return self.form2
 
+    def get_variables(self):
+        """Return all variables in the formula
+
+        Returns:
+            Set[str]: The variables as a set
+        """
+        return self.form1.get_variables().union(self.form2.get_variables())
+
 class Or(Formula):
 	def __init__(self,form1, form2):
 		self.form1 = form1
@@ -160,6 +195,14 @@ class Or(Formula):
 		
 	def get_right(self):
 		return self.form2
+
+    def get_variables(self):
+        """Return all variables in the formula
+
+        Returns:
+            Set[str]: The variables as a set
+        """
+        return self.form1.get_variables().union(self.form2.get_variables())
 
 class Proof:
 	def __init__(self, assumptions, proof):
