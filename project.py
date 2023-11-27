@@ -3,21 +3,54 @@ class Formula:
 		pass
 
 	def modus_ponens(self,a,b):
+		"""Applies the Modus Ponens rule to two logical propositions
+
+		Args:
+			a (?): The antecedent proposition
+			b (?): The consequent proposition
+		Returns:
+        	bool: The result of applying Modus Ponens 
+		"""
 		pass
 
 	def is_axiom1(self):
+		"""Checks if the given formula is constructed using Axiom 1
+
+		Returns:
+			bool: True if the formula is constructed with Axiom 1, False otherwise
+		"""
 		pass
 		
 	def is_axiom2(self):
+		"""Checks if the given formula is constructed using Axiom 2
+
+		Returns:
+			bool: True if the formula is constructed with Axiom 2, False otherwise
+		"""
 		pass
 		
 	def is_axiom3(self):
+		"""Checks if the given formula is constructed using Axiom 3
+
+		Returns:
+			bool: True if the formula is constructed with Axiom 3, False otherwise
+		"""
 		pass
 		
 	def is_axiom(self):
+		"""???
+		"""
 		pass
 		
 	def is_equal(self, formula):
+		"""Checks if the given formula is equal to the formula
+
+		Args:
+			formula (Formula): The Formula to check against
+
+		Returns:
+			bool: true if the formula is equal and false otherwise
+		"""
 	    return self.to_string() == formula.to_string()
 
 
@@ -29,6 +62,11 @@ class Variable(Formula):
 		return self.to_string()
 	
 	def to_string(self):
+		"""Returns the variable as a readable string
+
+		Returns:
+			str: variable
+		"""
 		return self.name
 		
 
@@ -41,13 +79,29 @@ class Implies(Formula):
 		return self.to_string()
 	
 	def to_string(self):
+		"""Returns the formula to the left of the implies arrow
+
+		Returns:
+    		str: The formula on the left side of the implies arrow
+		"""
 		return f"({self.form1} -> {self.form2})"
 		
 	def get_left(self):
+		"""Returns the formula to the left of the implies arrow (->)
+
+		Returns:
+    		Formula: The formula on the left side of the implies arrow
+		"""
 		return self.form1
 		
 	def get_right(self):
+		"""Returns the formula to the right oft the implies arrow (->)
+
+		Returns:
+			Formula: The formula on the right side of the implies arrow
+		"""
 		return self.form2
+		
 	
 				
 class Not(Formula):
@@ -58,11 +112,21 @@ class Not(Formula):
 		return self.to_string()
 	
 	def to_string(self):
+		"""Returns the formula with an "not" symbole
+
+		Returns:
+			str: The formula with an "not" symbole
+		"""
 		return f"~({self.form})"
 	
 	def get_form(self):
-		return self.form
+		"""Returns the formula without the negation
 
+		Returns:
+			Formula: The formula without negation
+		"""
+		return self.form
+	
 class And(Formula):
 	def __init__(self,form1, form2):
 		self.form1 = form1
@@ -103,6 +167,11 @@ class Proof:
 		self.proof = proof
 		
 	def verify(self):
+		"""Returns an true if the proof is correct and an false if its not correct
+
+		Returns:
+			bool: true if its correct and false if its not correct
+		"""
 		pass
 
 
