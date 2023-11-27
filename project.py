@@ -68,7 +68,18 @@ class Variable(Formula):
 			str: variable
 		"""
 		return self.name
-		
+	
+	def evaluate(self, d):
+		"""Returns the assignment of a variable
+
+		Args:
+			d (dict): dictionary with the assigments for the varibales
+
+		Returns:
+			bool: assigment for the variable true or false
+		"""
+		return d[self.name]
+			
 
     def get_variables(self):
         """Return all variables in the formula
@@ -110,6 +121,18 @@ class Implies(Formula):
 			Formula: The formula on the right side of the implies arrow
 		"""
 		return self.form2
+	
+	def evaluate(self, d):
+		"""Evaluates the boolean result of a logical formula containing an implies (->) operation
+
+		Args:
+			d (dict): dictionary with the assigments for the varibales
+
+		Returns:
+			bool: The result of the formula. true or false
+		"""
+		return not self.form1.evaluate(d) or self.form2.evaluate(d) 
+
 		
 	
     def get_variables(self):
@@ -145,7 +168,6 @@ class Not(Formula):
 		"""
 		return self.form
 	
-
     def get_variables(self):
         """Return all variables in the formula
 
@@ -154,6 +176,17 @@ class Not(Formula):
         """
         return self.form.get_variables()
     
+	def evaluate(self, d):
+		"""Returns the negation of the given formula
+
+		Args:
+			d (dict): dictionary with the assigments for the varibales
+
+		Returns:
+			bool: negation of the formula
+		"""
+		return not self.form.evaluate(d)
+	
 class And(Formula):
 	def __init__(self,form1, form2):
 		self.form1 = form1
@@ -170,6 +203,17 @@ class And(Formula):
 		
 	def get_right(self):
 		return self.form2
+	
+	def evaluate(self, d):
+		"""Evaluates the boolean result of a logical formula containing an And (/\) operation
+
+		Args:
+			d (dict): dictionary with the assigments for the varibales
+
+		Returns:
+			bool: The result of the formula. true or false
+		"""
+		return self.form1.evaluate(d) and self.form2.evaluate(d)
 
     def get_variables(self):
         """Return all variables in the formula
@@ -195,6 +239,17 @@ class Or(Formula):
 		
 	def get_right(self):
 		return self.form2
+	
+	def evaluate(self, d):
+		"""Evaluates the boolean result of a logical formula containing an Or (\/) operation
+
+		Args:
+			d (dict): dictionary with the assigments for the varibales
+
+		Returns:
+			bool: The result of the formula. true or false
+		"""
+		return self.form1.evaluate(d) or self.form2.evaluate(d)
 
     def get_variables(self):
         """Return all variables in the formula
