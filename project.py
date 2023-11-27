@@ -1,7 +1,12 @@
 
 def pretty_print_tt(table, variables):
-    """Pretty print the truth table with equal column width"""
+    """Pretty print the truth table
+        Args:
+            table [][bool]: The truth table values
+            variables [str]: The variables that appear in the formula
+    """
 
+    # Check how long our column should be
     # Length of 'False' is 5
     max_column_widths = [max(5, len(variable)) for variable in variables]
     # Length of 'Result' is 6
@@ -28,6 +33,7 @@ def pretty_print_tt(table, variables):
 
     print(separator)
 
+    # Print the rows containing the truth values
     for row in table:
         row_str = "|"
         for i, val in enumerate(row):
@@ -52,7 +58,7 @@ class Formula:
             a (?): The antecedent proposition
             b (?): The consequent proposition
         Returns:
-            bool: The result of applying Modus Ponens 
+            bool: The result of applying Modus Ponens
         """
         pass
 
@@ -60,7 +66,8 @@ class Formula:
         """Checks if the given formula is constructed using Axiom 1
 
         Returns:
-            bool: True if the formula is constructed with Axiom 1, False otherwise
+            bool: True if the formula is constructed with Axiom 1,
+                False otherwise
         """
         pass
 
@@ -68,7 +75,8 @@ class Formula:
         """Checks if the given formula is constructed using Axiom 2
 
         Returns:
-            bool: True if the formula is constructed with Axiom 2, False otherwise
+            bool: True if the formula is constructed with Axiom 2,
+                False otherwise
         """
         pass
 
@@ -76,7 +84,8 @@ class Formula:
         """Checks if the given formula is constructed using Axiom 3
 
         Returns:
-            bool: True if the formula is constructed with Axiom 3, False otherwise
+            bool: True if the formula is constructed with Axiom 3,
+                False otherwise
         """
         pass
 
@@ -97,7 +106,13 @@ class Formula:
         return self.to_string() == formula.to_string()
 
     def get_tt(self, pretty_print=False):
-        """Generate a truth tabel for the formula"""
+        """Generate and print a truth tabel for the formula
+
+        Args:
+            pretty_print=False (bool): Turn on for less
+                performance but better readability
+
+        """
         variables = sorted(self.get_variables())
 
         # List of [variable_assignments | truth value]
@@ -199,7 +214,8 @@ class Implies(Formula):
         return self.form2
 
     def evaluate(self, d):
-        """Evaluates the boolean result of a logical formula containing an implies (->) operation
+        """Evaluates the boolean result of a logical formula,
+            containing an implies (->) operation
 
         Args:
             d (dict): dictionary with the assigments for the varibales
@@ -270,7 +286,7 @@ class And(Formula):
         return self.to_string()
 
     def to_string(self):
-        return f"({self.form1} /\ {self.form2})"
+        return f"({self.form1} /\\ {self.form2})"
 
     def get_left(self):
         return self.form1
@@ -279,7 +295,8 @@ class And(Formula):
         return self.form2
 
     def evaluate(self, d):
-        """Evaluates the boolean result of a logical formula containing an And (/\) operation
+        """Evaluates the boolean result of a logical formula containing
+            an And (/\\) operation
 
         Args:
             d (dict): dictionary with the assigments for the varibales
@@ -307,7 +324,7 @@ class Or(Formula):
         return self.to_string()
 
     def to_string(self):
-        return f"({self.form1} \/ {self.form2})"
+        return f"({self.form1} \\/ {self.form2})"
 
     def get_left(self):
         return self.form1
@@ -316,7 +333,8 @@ class Or(Formula):
         return self.form2
 
     def evaluate(self, d):
-        """Evaluates the boolean result of a logical formula containing an Or (\/) operation
+        """Evaluates the boolean result of a logical formula,
+            containing an Or (\\/) operation
 
         Args:
             d (dict): dictionary with the assigments for the varibales
@@ -341,7 +359,8 @@ class Proof:
         self.proof = proof
 
     def verify(self):
-        """Returns an true if the proof is correct and an false if its not correct
+        """Returns an true if the proof is correct and
+            false if its not correct
 
         Returns:
             bool: true if its correct and false if its not correct
