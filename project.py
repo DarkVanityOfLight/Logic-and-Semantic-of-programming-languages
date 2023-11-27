@@ -18,7 +18,6 @@ class Formula:
 		pass
 		
 	def is_equal(self, formula):
-		pass
 
 
 class Variable(Formula):
@@ -29,7 +28,7 @@ class Variable(Formula):
 		return self.to_string()
 	
 	def to_string(self):
-		pass
+		return self.name
 		
 
 class Implies(Formula):
@@ -41,13 +40,13 @@ class Implies(Formula):
 		return self.to_string()
 	
 	def to_string(self):
-		pass
+		return f"({self.form1} -> {self.form2})"
 		
 	def get_left(self):
-		pass
+		return self.form1
 		
 	def get_right(self):
-		pass
+		return self.form2
 	
 				
 class Not(Formula):
@@ -58,10 +57,10 @@ class Not(Formula):
 		return self.to_string()
 	
 	def to_string(self):
-		pass
+		return f"~({self.form})"
 	
 	def get_form(self):
-		pass
+		return self.form
 
 
 class Proof:
