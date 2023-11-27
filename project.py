@@ -149,6 +149,20 @@ class Formula:
 
             return full_str
 
+    def is_equivalent(self, other):
+        # TODO: Naive implemntation, doesn't work
+        # if one formula has one variable more
+        # in that case we would have to insert an extra variable at the right
+        # position in the other truth table,
+        # or try to squash the extra variable in one table
+        # since it isn't allowed to make a difference
+        # there would be two lines per assignment
+        # where the rest of the assignment is the same and
+        # it only differs in the extra variable
+        # but the resulting truth value is the same,
+        # we would squash these lines together and "remove" the variable
+        return self.get_tt() == other.get_tt()
+
 
 class Variable(Formula):
     def __init__(self, name):
