@@ -63,6 +63,39 @@ class Not(Formula):
 	def get_form(self):
 		return self.form
 
+class And(Formula):
+	def __init__(self,form1, form2):
+		self.form1 = form1
+		self.form2 = form2
+		
+	def __str__(self):
+		return self.to_string()
+	
+	def to_string(self):
+		return f"({self.form1} /\ {self.form2})"
+		
+	def get_left(self):
+		return self.form1
+		
+	def get_right(self):
+		return self.form2
+
+class And(Formula):
+	def __init__(self,form1, form2):
+		self.form1 = form1
+		self.form2 = form2
+		
+	def __str__(self):
+		return self.to_string()
+	
+	def to_string(self):
+		return f"({self.form1} \/ {self.form2})"
+		
+	def get_left(self):
+		return self.form1
+		
+	def get_right(self):
+		return self.form2
 
 class Proof:
 	def __init__(self, assumptions, proof):
