@@ -144,7 +144,7 @@ class And(Formula):
 	def get_right(self):
 		return self.form2
 
-class And(Formula):
+class Or(Formula):
 	def __init__(self,form1, form2):
 		self.form1 = form1
 		self.form2 = form2
