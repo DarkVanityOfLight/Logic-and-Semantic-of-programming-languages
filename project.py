@@ -1,10 +1,12 @@
 
-def pretty_print_tt(table, variables):
+def pretty_tt(table, variables):
     """Pretty print the truth table
         Args:
             table [][bool]: The truth table values
             variables [str]: The variables that appear in the formula
     """
+
+    full_str = ""
 
     # Check how long our column should be
     # Length of 'False' is 5
@@ -19,7 +21,7 @@ def pretty_print_tt(table, variables):
         separator += width * "-"
         separator += "+"
 
-    print(separator)
+    full_str += separator + "\n"
 
     header = "|"
     for i, variable in enumerate(variables):
@@ -29,9 +31,9 @@ def pretty_print_tt(table, variables):
     header += "|"
     header += "Result|"
 
-    print(header)
+    full_str += header + "\n"
 
-    print(separator)
+    full_str += separator + "\n"
 
     # Print the rows containing the truth values
     for row in table:
@@ -42,9 +44,10 @@ def pretty_print_tt(table, variables):
 
             row_str += str(val).ljust(max_column_widths[i])
             row_str += "|"
-        print(row_str)
+        full_str += row_str + "\n"
 
-    print(separator)
+    full_str += separator + "\n"
+    return full_str
 
 
 class Formula:
@@ -105,7 +108,7 @@ class Formula:
         """
         return self.to_string() == formula.to_string()
 
-    def get_tt(self, pretty_print=False):
+    def get_tt(self, pretty=False):
         """Generate and print a truth tabel for the formula
 
         Args:
@@ -134,16 +137,19 @@ class Formula:
 
         recursor(variables, {})
 
-        if pretty_print:
+        if pretty:
             # Clean up the table, by going from dict to list
             # and "pulling" out the variables
 
             table = [list(row[0].values()) + [row[1]] for row in table]
 
-            pretty_print_tt(reversed(table), variables)
+            return pretty_tt(reversed(table), variables)
         else:
+            full_str = ""
             for row in table:
-                print(row)
+                full_str += str(row) + "\n"
+
+            return full_str
 
 
 class Variable(Formula):
@@ -295,7 +301,7 @@ class And(Formula):
         return self.form2
 
     def evaluate(self, d):
-        """Evaluates the boolean result of a logical formula containing
+        """Evaluates the boolean result of a logical formula containin_g
             an And (/\\) operation
 
         Args:
@@ -390,4 +396,4 @@ print("Test case1: ", test_case_1())
 print("Test case2: ", test_case_2())
 
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
-Implies(a, And(Not(b), c)).get_tt()
+print(Implies(a, And(Not(b), c)).get_tt(pretty=True))
