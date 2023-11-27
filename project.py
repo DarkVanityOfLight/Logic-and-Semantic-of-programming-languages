@@ -96,7 +96,7 @@ class Formula:
         """
         return self.to_string() == formula.to_string()
 
-    def get_tt(self):
+    def get_tt(self, pretty_print=False):
         """Generate a truth tabel for the formula"""
         variables = sorted(self.get_variables())
 
@@ -119,12 +119,16 @@ class Formula:
 
         recursor(variables, {})
 
-        # Clean up the table, by going from dict to list
-        # and "pulling" out the variables
+        if pretty_print:
+            # Clean up the table, by going from dict to list
+            # and "pulling" out the variables
 
-        table = [list(row[0].values()) + [row[1]] for row in table]
+            table = [list(row[0].values()) + [row[1]] for row in table]
 
-        pretty_print_tt(reversed(table), variables)
+            pretty_print_tt(reversed(table), variables)
+        else:
+            for row in table:
+                print(row)
 
 
 class Variable(Formula):
