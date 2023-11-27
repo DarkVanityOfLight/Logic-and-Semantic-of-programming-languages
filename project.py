@@ -116,34 +116,32 @@ class Formula:
                 performance but better readability
 
         """
+
+        # We always order variables before working with them
         variables = sorted(self.get_variables())
+
+        # For i in range 2 ** len(variables)
+        # convert the number to binary, and cut the leading 0b
+        # then zero fill till we get the full variable length
+        # Convert each value from string to int and then to bool,
+        #  because string to bool doesn't work directly
+        assignments = [[bool(int(x)) for x in bin(i)[2:].zfill(len(variables))]
+                       for i in range(2 ** len(variables))]
+
+        print(assignments)
 
         # List of [variable_assignments | truth value]
         table = []
-
-        def recursor(v, assignment):
-            if len(v) == 0:
-                table.append([assignment, self.evaluate(assignment)])
-            else:
-                assign_var = v[0]
-
-                assignment_false = assignment.copy()
-
-                assignment[assign_var] = True
-                assignment_false[assign_var] = False
-
-                recursor(v[1:], assignment)
-                recursor(v[1:], assignment_false)
-
-        recursor(variables, {})
+        for assignment in assignments:
+            # Zip our variables and assignment together as dictionary
+            assignment_dict = dict(zip(variables, assignment))
+            # Calculate the evaluation using our assignment
+            evaluation = self.evaluate(assignment_dict)
+            # Add the evaluation and assignment to our table
+            table.append(assignment + [evaluation])
 
         if pretty:
-            # Clean up the table, by going from dict to list
-            # and "pulling" out the variables
-
-            table = [list(row[0].values()) + [row[1]] for row in table]
-
-            return pretty_tt(reversed(table), variables)
+            return pretty_tt(table, variables)
         else:
             full_str = ""
             for row in table:
