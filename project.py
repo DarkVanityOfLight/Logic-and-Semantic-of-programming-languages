@@ -51,7 +51,7 @@ class Formula:
 		Returns:
 			bool: true if the formula is equal and false otherwise
 		"""
-		pass
+	    return self.to_string() == formula.to_string()
 
 
 class Variable(Formula):
@@ -67,7 +67,7 @@ class Variable(Formula):
 		Returns:
 			str: variable
 		"""
-		pass
+		return self.name
 		
 
 class Implies(Formula):
@@ -84,7 +84,7 @@ class Implies(Formula):
 		Returns:
     		str: The formula on the left side of the implies arrow
 		"""
-
+		return f"({self.form1} -> {self.form2})"
 		
 	def get_left(self):
 		"""Returns the formula to the left of the implies arrow (->)
@@ -92,7 +92,7 @@ class Implies(Formula):
 		Returns:
     		Formula: The formula on the left side of the implies arrow
 		"""
-		pass
+		return self.form1
 		
 	def get_right(self):
 		"""Returns the formula to the right oft the implies arrow (->)
@@ -100,7 +100,8 @@ class Implies(Formula):
 		Returns:
 			Formula: The formula on the right side of the implies arrow
 		"""
-		pass
+		return self.form2
+		
 	
 				
 class Not(Formula):
@@ -116,7 +117,7 @@ class Not(Formula):
 		Returns:
 			str: The formula with an "not" symbole
 		"""
-		pass
+		return f"~({self.form})"
 	
 	def get_form(self):
 		"""Returns the formula without the negation
@@ -124,8 +125,41 @@ class Not(Formula):
 		Returns:
 			Formula: The formula without negation
 		"""
-		pass
+		return self.form
+	
+class And(Formula):
+	def __init__(self,form1, form2):
+		self.form1 = form1
+		self.form2 = form2
+		
+	def __str__(self):
+		return self.to_string()
+	
+	def to_string(self):
+		return f"({self.form1} /\ {self.form2})"
+		
+	def get_left(self):
+		return self.form1
+		
+	def get_right(self):
+		return self.form2
 
+class And(Formula):
+	def __init__(self,form1, form2):
+		self.form1 = form1
+		self.form2 = form2
+		
+	def __str__(self):
+		return self.to_string()
+	
+	def to_string(self):
+		return f"({self.form1} \/ {self.form2})"
+		
+	def get_left(self):
+		return self.form1
+		
+	def get_right(self):
+		return self.form2
 
 class Proof:
 	def __init__(self, assumptions, proof):
