@@ -18,6 +18,7 @@ class Formula:
 		pass
 		
 	def is_equal(self, formula):
+	    return self.to_string() == formula.to_string()
 
 
 class Variable(Formula):
