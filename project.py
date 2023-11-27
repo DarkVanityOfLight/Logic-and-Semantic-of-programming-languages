@@ -1,3 +1,46 @@
+
+def pretty_print_tt(table, variables):
+    """Pretty print the truth table with equal column width"""
+
+    # Length of 'False' is 5
+    max_column_widths = [max(5, len(variable)) for variable in variables]
+    # Length of 'Result' is 6
+    max_column_widths.append(6)
+
+    separator = "+"
+    for i, width in enumerate(max_column_widths):
+        if i == len(max_column_widths) - 1:
+            separator += "+"
+        separator += width * "-"
+        separator += "+"
+
+    print(separator)
+
+    header = "|"
+    for i, variable in enumerate(variables):
+        header += variable.ljust(max_column_widths[i])
+        header += "|"
+
+    header += "|"
+    header += "Result|"
+
+    print(header)
+
+    print(separator)
+
+    for row in table:
+        row_str = "|"
+        for i, val in enumerate(row):
+            if i == len(row) - 1:
+                row_str += "|"
+
+            row_str += str(val).ljust(max_column_widths[i])
+            row_str += "|"
+        print(row_str)
+
+    print(separator)
+
+
 class Formula:
     def __init__(self):
         pass
@@ -52,6 +95,36 @@ class Formula:
             bool: true if the formula is equal and false otherwise
         """
         return self.to_string() == formula.to_string()
+
+    def get_tt(self):
+        """Generate a truth tabel for the formula"""
+        variables = sorted(self.get_variables())
+
+        # List of [variable_assignments | truth value]
+        table = []
+
+        def recursor(v, assignment):
+            if len(v) == 0:
+                table.append([assignment, self.evaluate(assignment)])
+            else:
+                assign_var = v[0]
+
+                assignment_false = assignment.copy()
+
+                assignment[assign_var] = True
+                assignment_false[assign_var] = False
+
+                recursor(v[1:], assignment)
+                recursor(v[1:], assignment_false)
+
+        recursor(variables, {})
+
+        # Clean up the table, by going from dict to list
+        # and "pulling" out the variables
+
+        table = [list(row[0].values()) + [row[1]] for row in table]
+
+        pretty_print_tt(reversed(table), variables)
 
 
 class Variable(Formula):
@@ -292,3 +365,6 @@ def test_case_2():
 
 print("Test case1: ", test_case_1())
 print("Test case2: ", test_case_2())
+
+a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
+Implies(a, And(Not(b), c)).get_tt()
