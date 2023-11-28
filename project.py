@@ -180,7 +180,17 @@ class Formula:
         # but Python is fine with this, so why not
         assignments = [dict(zip(variables, assignment)) for assignment in assignments]
 
-        return self.get_tt(assignments=assignments) == other.get_tt(assignments=assignments)
+        # We could just compare the entire table, but I think it is better to just compare the resulting 
+        # evaluations, since the rest should per definition already be the same
+        
+        tt1 = self.get_tt(assignments=assignments)
+        tt2 = self.get_tt(assignments=assignments)
+
+        for i in  range(2** len(variables)):
+            if tt1[i][-1] != tt2[i][-1]:
+                return False
+
+        return True
 
 
 class Variable(Formula):
