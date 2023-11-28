@@ -220,6 +220,9 @@ class Variable(Formula):
         """
         return {self.name}
 
+    def get_NNF(self):
+        return self
+
 
 class Implies(Formula):
     def __init__(self, form1, form2):
@@ -273,6 +276,10 @@ class Implies(Formula):
         """
         return self.form1.get_variables().union(self.form2.get_variables())
 
+    def get_NNF(self):
+        # Unfold implies
+        return Or(Not(self.get_left()).get_NNF(), self.get_right().get_NNF())
+
 
 class Not(Formula):
     def __init__(self, form):
@@ -316,6 +323,31 @@ class Not(Formula):
         """
         return not self.form.evaluate(d)
 
+    def get_NNF(self):
+
+        # Remove double negation
+        if isinstance(self.get_form(), Not):
+            return self.get_form().get_form().get_NNF()
+        # Unfold implies
+        elif isinstance(self.get_form(), Implies):
+            return And(self.get_form().get_left().get_NNF(),
+                       Not(self.get_form().get_right()).get_NNF())
+        # De Morgan for And
+        elif isinstance(self.get_form(), And):
+            return Or(Not(self.get_form().get_left()).get_NNF(),
+                      Not(self.get_form().get_right()).get_NNF())
+        # De Morgan for Or
+        elif isinstance(self.get_form(), Or):
+            return And(Not(self.get_form().get_left()).get_NNF(),
+                       Not(self.get_form().get_right()).get_NNF())
+        # Variable just passes
+        elif isinstance(self.get_form(), Variable):
+            return Not(self.get_form())
+
+        # Something didn't get implemented yet
+        else:
+            raise "Unreachable"
+
 
 class And(Formula):
     def __init__(self, form1, form2):
@@ -354,6 +386,9 @@ class And(Formula):
         """
         return self.form1.get_variables().union(self.form2.get_variables())
 
+    def get_NNF(self):
+        return And(self.get_left().get_NNF(), self.get_right().get_NNF())
+
 
 class Or(Formula):
     def __init__(self, form1, form2):
@@ -391,6 +426,9 @@ class Or(Formula):
             Set[str]: The variables as a set
         """
         return self.form1.get_variables().union(self.form2.get_variables())
+
+    def get_NNF(self):
+        return Or(self.get_left().get_NNF(), self.get_right().get_NNF())
 
 
 class Proof:
@@ -462,3 +500,9 @@ print(formula2)
 print(formula2.get_tt(pretty=True, assignments=assignments))
 
 print(formula1.is_equivalent(formula2))
+
+a, b, c = Variable("a"), Variable("b"), Variable("c")
+formula = Not(Implies(a, Or(b, And(c, Not(c)))))
+print(formula)
+print(formula.get_NNF())
+print(formula.get_NNF().is_equivalent(formula))
