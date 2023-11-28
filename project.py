@@ -144,7 +144,8 @@ class Formula:
 
         if assignments is None:
             # We always order variables before working with them
-            variables = sorted(self.get_variables())
+            variables_obj = self.get_variables()
+            variables = [variable.name for variable in variables_obj]
 
             # For i in range 2 ** len(variables)
             # convert the number to binary, and cut the leading 0b
@@ -180,10 +181,11 @@ class Formula:
         # and generate the truth tabel for that
 
         variables = self.get_variables().union(other.get_variables())
+        variable_names = [v.name for v in variables]
         assignments = generate_assignment(len(variables))
         # I feel like here I should have to cast every variables
         # element to string but Python is fine with this, so why not
-        assignments = [dict(zip(variables, assignment))
+        assignments = [dict(zip(variable_names, assignment))
                        for assignment in assignments]
 
         return self.get_tt(assignments=assignments) == other.get_tt(
@@ -222,7 +224,7 @@ class Variable(Formula):
         Returns:
             Set[str]: The variables as a set
         """
-        return {self.name}
+        return {self}
 
     def get_NNF(self):
         return self
@@ -476,13 +478,14 @@ print(Implies(a, And(Not(b), c)).get_tt(pretty=True))
 
 
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
-variable_list = [str(a), str(b), str(c)]
+variable_list = [a.name, b.name, c.name]
 assignments = generate_assignment(3)
 assignments = [dict(zip(variable_list, assignment))
                for assignment in assignments]
 formula1 = Or(a, b)
 print(formula1)
 print(formula1.get_tt(pretty=True, assignments=assignments))
+
 formula2 = Or(a, Or(b, And(c, Not(c))))
 print(formula2)
 print(Or(a, Or(b, And(c, Not(c)))).get_tt(
