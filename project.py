@@ -180,17 +180,8 @@ class Formula:
         # but Python is fine with this, so why not
         assignments = [dict(zip(variables, assignment)) for assignment in assignments]
 
-        # We could just compare the entire table, but I think it is better to just compare the resulting 
-        # evaluations, since the rest should per definition already be the same
-        
-        tt1 = self.get_tt(assignments=assignments)
-        tt2 = self.get_tt(assignments=assignments)
+        return self.get_tt(assignments=assignments) == other.get_tt(assignments=assignments)
 
-        for i in  range(2** len(variables)):
-            if tt1[i][-1] != tt2[i][-1]:
-                return False
-
-        return True
 
 
 class Variable(Formula):
@@ -450,5 +441,19 @@ print(formula1.get_tt(pretty=True, assignments=assignments))
 formula2 = Or(a, Or(b, And(c, Not(c))))
 print(formula2)
 print(Or(a, Or(b, And(c, Not(c)))).get_tt(pretty=True, assignments=assignments))
+
+print(formula1.is_equivalent(formula2))
+
+a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
+variable_list = [str(a), str(b), str(c)]
+assignments = generate_assignment(3)
+assignments = [dict(zip(variable_list, assignment)) for assignment in assignments]
+formula1 = Or(a, b)
+formula2 = Or(a, Or(b, And(c, c)))
+
+print(formula1)
+print(formula1.get_tt(pretty=True, assignments=assignments))
+print(formula2)
+print(formula2.get_tt(pretty=True, assignments = assignments))
 
 print(formula1.is_equivalent(formula2))
