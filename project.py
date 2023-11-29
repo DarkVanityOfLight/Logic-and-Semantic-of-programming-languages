@@ -2,8 +2,10 @@
 def pretty_tt(table, variables):
     """Pretty print the truth table
         Args:
-            table [][bool]: The truth table values
-            variables [str]: The variables that appear in the formula
+            table ([][bool]): The truth table values
+            variables ([str]): The variables that appear in the formula
+        Returns:
+            (str): The table in a pretty human readable format
     """
 
     full_str = ""
@@ -51,6 +53,14 @@ def pretty_tt(table, variables):
 
 
 def generate_assignment(size):
+    """Generate truth table assignments based on number of variables
+
+    Args:
+        size (int): The number of variables to generate for
+    Returns:
+        (List[][bool]): The truth table assignments, per row
+    """
+
     # Initialize an empty list to store assignments
     assignments = []
 
@@ -83,7 +93,7 @@ class Formula:
             a (?): The antecedent proposition
             b (?): The consequent proposition
         Returns:
-            bool: The result of applying Modus Ponens
+            (bool): The result of applying Modus Ponens
         """
         pass
 
@@ -94,7 +104,7 @@ class Formula:
         A -> (B -> A)
 
         Returns:
-            bool: True if the formula is constructed with Axiom 1,
+            (bool): True if the formula is constructed with Axiom 1,
                 False otherwise
         """
 
@@ -121,7 +131,7 @@ class Formula:
         (A -> (B -> C)) -> ((A -> B) -> (A -> C))
 
         Returns:
-            bool: True if the formula is constructed with Axiom 2,
+            (bool): True if the formula is constructed with Axiom 2,
                 False otherwise
         """
 
@@ -185,7 +195,7 @@ class Formula:
         (~A -> ~B) -> (B -> A)
 
         Returns:
-            bool: True if the formula is constructed with Axiom 3,
+            (bool): True if the formula is constructed with Axiom 3,
                 False otherwise
         """
 
@@ -229,7 +239,7 @@ class Formula:
         """Check if the formula is any Axiom
 
         Returns:
-            bool: True if it is any Axiom else False
+            (bool): True if it is any Axiom else False
         """
 
         return self.is_axiom1() or self.is_axiom2() or self.is_axiom3()
@@ -241,7 +251,7 @@ class Formula:
             formula (Formula): The Formula to check against
 
         Returns:
-            bool: true if the formula is equal and false otherwise
+            (bool): true if the formula is equal and false otherwise
         """
         # TODO: Naive Implementation, replace by recusive
         return self.to_string() == formula.to_string()
@@ -401,7 +411,7 @@ class Variable(Formula):
         """Returns the variable as a readable string
 
         Returns:
-            str: variable
+            (str): variable
         """
         return self.name
 
@@ -412,7 +422,7 @@ class Variable(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: assigment for the variable true or false
+            (bool): assigment for the variable true or false
         """
         return d[self.name]
 
@@ -420,7 +430,7 @@ class Variable(Formula):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
         return {self}
 
@@ -442,10 +452,11 @@ class Implies(Formula):
         return self.to_string()
 
     def to_string(self):
-        """Returns the formula to the left of the implies arrow
+        """Returns the formula in human readable form,
+        the implies symbol is ->
 
         Returns:
-            str: The formula on the left side of the implies arrow
+            (str): The formula in human readable form
         """
         return f"({self.get_left()} -> {self.get_right()})"
 
@@ -453,7 +464,7 @@ class Implies(Formula):
         """Returns the formula to the left of the implies arrow (->)
 
         Returns:
-            Formula: The formula on the left side of the implies arrow
+            (Formula): The formula on the left side of the implies arrow
         """
         return self.form1
 
@@ -461,7 +472,7 @@ class Implies(Formula):
         """Returns the formula to the right oft the implies arrow (->)
 
         Returns:
-            Formula: The formula on the right side of the implies arrow
+            (Formula): The formula on the right side of the implies arrow
         """
         return self.form2
 
@@ -473,7 +484,7 @@ class Implies(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: The result of the formula. true or false
+            (bool): The result of the formula. true or false
         """
         return not self.get_left().evaluate(d) or self.get_right().evaluate(d)
 
@@ -481,7 +492,7 @@ class Implies(Formula):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
         return self.get_left().get_variables().union(
             self.get_right().get_variables())
@@ -504,10 +515,10 @@ class Not(Formula):
         return self.to_string()
 
     def to_string(self):
-        """Returns the formula with an "not" symbole
+        """Returns the formula in human readable form, the not symbol is ~
 
         Returns:
-            str: The formula with an "not" symbole
+            (str): The formula with an "not" symbole
         """
         return f"~({self.get_form()})"
 
@@ -515,7 +526,7 @@ class Not(Formula):
         """Returns the formula without the negation
 
         Returns:
-            Formula: The formula without negation
+            (Formula): The formula without negation
         """
         return self.form
 
@@ -523,7 +534,7 @@ class Not(Formula):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
         return self.get_form().get_variables()
 
@@ -534,7 +545,7 @@ class Not(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: negation of the formula
+            (bool): negation of the formula
         """
         return not self.get_form().evaluate(d)
 
@@ -578,12 +589,27 @@ class And(Formula):
         return self.to_string()
 
     def to_string(self):
+        """Return the formula in human readable form, and is represented by /\\
+
+        Returns:
+            (str): The formula as human readable string
+        """
         return f"({self.get_left()} /\\ {self.get_right()})"
 
     def get_left(self):
+        """Returns the formula to the left of the and symbol (/\\)
+
+        Returns:
+            (Formula): The formula on the left side of the and symbol
+        """
         return self.form1
 
     def get_right(self):
+        """Returns the formula to the right of the and symbol (/\\)
+
+        Returns:
+            (Formula): The formula on the right side of the and symbol
+        """
         return self.form2
 
     def evaluate(self, d):
@@ -594,7 +620,7 @@ class And(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: The result of the formula. true or false
+            (bool): The result of the formula. true or false
         """
         return self.get_left().evaluate(d) and self.get_right().evaluate(d)
 
@@ -602,9 +628,10 @@ class And(Formula):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
-        return self.get_left().get_variables().union(self.get_right().get_variables())
+        return self.get_left().get_variables().union(
+            self.get_right().get_variables())
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
@@ -624,12 +651,26 @@ class Or(Formula):
         return self.to_string()
 
     def to_string(self):
+        """Return the formula in human readable form, or is represented by \\/
+        Returns:
+            (str): The formula as human readable string
+        """
         return f"({self.get_left()} \\/ {self.get_right()})"
 
     def get_left(self):
+        """Returns the formula to the left of the or symbol (\\/)
+
+        Returns:
+            (Formula): The formula on the left side of the or symbol
+        """
         return self.form1
 
     def get_right(self):
+        """Returns the formula to the right of the or symbol (\\/)
+
+        Returns:
+            (Formula): The formula on the left side of the implies arrow
+        """
         return self.form2
 
     def evaluate(self, d):
@@ -640,7 +681,7 @@ class Or(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: The result of the formula. true or false
+            (bool): The result of the formula. true or false
         """
         return self.get_left().evaluate(d) or self.get_right().evaluate(d)
 
@@ -648,7 +689,7 @@ class Or(Formula):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
         return self.get_left().get_variables().union(
             self.get_right().get_variables())
@@ -672,7 +713,7 @@ class Proof:
             false if its not correct
 
         Returns:
-            bool: true if its correct and false if its not correct
+            (bool): true if its correct and false if its not correct
         """
         pass
 
