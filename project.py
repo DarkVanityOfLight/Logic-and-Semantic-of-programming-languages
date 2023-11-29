@@ -308,9 +308,8 @@ class Formula:
                        for assignment in assignments]
 
         # Kinda ugly but what can you do
-        return
-        self.get_tt(pretty=False, assignments=assignments) == other.get_tt(
-            pretty=False, assignments=assignments)
+        return (self.get_tt(pretty=False, assignments=assignments) ==
+                other.get_tt(pretty=False, assignments=assignments))
 
     def get_DNF(self):
         """
@@ -677,10 +676,12 @@ print("Test case1: ", test_case_1())
 print("Test case2: ", test_case_2())
 
 # TODO: Cleanup and standarize testing
+print("Test truth table")
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
 print(Implies(a, And(Not(b), c)).get_tt(pretty=True))
 
 
+print("Check equivalenz")
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
 variable_list = [a.name, b.name, c.name]
 assignments = generate_assignment(3)
@@ -701,12 +702,16 @@ print(formula2.get_tt(pretty=True, assignments=assignments))
 
 print(formula1.is_equivalent(formula2))
 
+
+print("Test NNF")
 a, b, c = Variable("a"), Variable("b"), Variable("c")
 formula = Not(Implies(a, Or(b, And(c, Not(c)))))
 print(formula)
 print(formula.get_NNF())
 print(formula.get_NNF().is_equivalent(formula))
 
+
+print("Test DNF")
 a, b, c = Variable("a"), Variable("b"), Variable("c")
 formula = Not(Implies(a, Or(b, And(c, Not(c)))))
 print(formula)
