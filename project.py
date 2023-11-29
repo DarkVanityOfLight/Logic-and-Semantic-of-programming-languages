@@ -225,7 +225,7 @@ class Formula:
         # TODO: Naive Implementation, replace by recusive
         return self.to_string() == formula.to_string()
 
-    def get_tt(self, pretty=False, assignments=None):
+    def get_tt(self, pretty=True, assignments=None):
         """
         Generate a truth tabel for the formula,
         only pretty print will return a string, if
@@ -241,8 +241,6 @@ class Formula:
                 only to be used for equivalenz checking.
 
         """
-
-        # TODO: by default return table as pretty printed table
 
         # List of [variable_assignments | truth value]
         table = []
@@ -309,8 +307,10 @@ class Formula:
         assignments = [dict(zip(variable_names, assignment))
                        for assignment in assignments]
 
-        return self.get_tt(assignments=assignments) == other.get_tt(
-            assignments=assignments)
+        # Kinda ugly but what can you do
+        return
+        self.get_tt(pretty=False, assignments=assignments) == other.get_tt(
+            pretty=False, assignments=assignments)
 
     def get_DNF(self):
         """
@@ -323,7 +323,7 @@ class Formula:
 
         # Get the variables and the truth table
         variables = list(self.get_variables())
-        tt = self.get_tt()
+        tt = self.get_tt(pretty=False)
 
         def conjunct(exp):
             """
