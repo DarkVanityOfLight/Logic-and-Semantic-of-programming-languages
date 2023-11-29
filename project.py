@@ -98,6 +98,9 @@ class Formula:
                 False otherwise
         """
 
+        # We always have to check that our operator is
+        # actually a Implication and not a And, Or, Not Operator
+
         if isinstance(self, Implies):
             # Get first A
             A = self.get_left()
@@ -121,6 +124,9 @@ class Formula:
             bool: True if the formula is constructed with Axiom 2,
                 False otherwise
         """
+
+        # We always have to check that our operator is
+        # actually a Implication and not a And, Or, Not Operator
 
         # Indicate if we have the axiom
         flag = True
@@ -182,6 +188,9 @@ class Formula:
             bool: True if the formula is constructed with Axiom 3,
                 False otherwise
         """
+
+        # We always have to check that our operator is
+        # actually a Implication and not a And or Or Operator
 
         flag = True
         if isinstance(self, Implies):
