@@ -51,13 +51,25 @@ def pretty_tt(table, variables):
 
 
 def generate_assignment(size):
-    # For i in range 2 ** len(variables)
-    # convert the number to binary, and cut the leading 0b
-    # then zero fill till we get the full variable length
-    # Convert each value from string to int and then to bool,
-    #  because string to bool doesn't work directly
-    return [[bool(int(x)) for x in bin(i)[2:].zfill(size)]
-            for i in range(2 ** size)]
+    # Initialize an empty list to store assignments
+    assignments = []
+
+    # Count up to  2**size
+    for i in range(2 ** size):
+        # Convert the number to binary and remove the '0b' prefix
+        binary_representation = bin(i)[2:]
+
+        # Zero-fill the binary representation to match the specified size
+        binary_representation = binary_representation.zfill(size)
+
+        # Convert each character in the binary representation
+        # to a boolean value
+        assignment = [bool(int(bit)) for bit in binary_representation]
+
+        # Add the assignment to the list
+        assignments.append(assignment)
+
+    return assignments
 
 
 class Formula:
