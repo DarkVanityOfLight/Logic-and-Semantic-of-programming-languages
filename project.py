@@ -78,34 +78,140 @@ class Formula:
     def is_axiom1(self):
         """Checks if the given formula is constructed using Axiom 1
 
+        The Axiom is:
+        A -> (B -> A)
+
         Returns:
             bool: True if the formula is constructed with Axiom 1,
                 False otherwise
         """
-        pass
+
+        if isinstance(self, Implies):
+            # Get first A
+            A = self.get_left()
+            B_implies_A = self.get_right()
+            # Check the right hand, should be of form B -> A
+            if isinstance(B_implies_A, Implies):
+                # B = righthand.get_left()
+
+                # Check that we have the same A as on the left side
+                return B_implies_A.get_right().is_equal(A)
+
+        return False
 
     def is_axiom2(self):
         """Checks if the given formula is constructed using Axiom 2
+
+        The Axiom is:
+        (A -> (B -> C)) -> ((A -> B) -> (A -> C))
 
         Returns:
             bool: True if the formula is constructed with Axiom 2,
                 False otherwise
         """
-        pass
+
+        # Indicate if we have the axiom
+        flag = True
+        if isinstance(self, Implies):
+            # left hand (A -> (B -> C))
+            A_implies_B_implies_C = self.get_left()
+
+            A, B, C = None, None, None
+
+            # Unfold left side (A -> (B -> C))
+            if isinstance(A_implies_B_implies_C, Implies):
+                A = A_implies_B_implies_C.get_left()
+
+                B_implies_C = A_implies_B_implies_C.get_left()
+
+                if isinstance(B_implies_C, Implies):
+                    B = B_implies_C.get_left()
+                    C = B_implies_C.get_right()
+                else:
+                    return False
+
+            # right hand ((A -> B) -> (A -> C))
+            A_implies_B_implies_A_implies_C = self.get_right()
+
+            # Unfold right hand ((A -> B) -> (A -> C))
+            if isinstance(A_implies_B_implies_A_implies_C, Implies):
+                A_implies_B = A_implies_B_implies_A_implies_C.get_left()
+                A_implies_C = A_implies_B_implies_A_implies_C.get_right()
+
+                # Unfold A -> B
+                if isinstance(A_implies_B, Implies):
+                    # Check that we have the same A and B here
+                    flag = flag and A_implies_B.get_left().is_equal(A)
+                    flag = flag and A_implies_B.get_right().is_equal(B)
+                else:
+                    return False
+
+                # Unfold A -> C
+                if isinstance(A_implies_C, Implies):
+                    # Check that we have the same A and C here
+                    flag = flag and A_implies_C.get_left().is_equal(A)
+                    flag = flag and A_implies_C.get_right().is_equal(C)
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
+
+        return flag
 
     def is_axiom3(self):
         """Checks if the given formula is constructed using Axiom 3
+
+        The Axiom is:
+        (~A -> ~B) -> (B -> A)
 
         Returns:
             bool: True if the formula is constructed with Axiom 3,
                 False otherwise
         """
-        pass
+
+        flag = True
+        if isinstance(self, Implies):
+            A, B = None, None
+
+            # left hand
+            not_A_implies_not_B = self.get_left()
+            if isinstance(not_A_implies_not_B, Implies):
+                not_A = not_A_implies_not_B.get_left()
+                not_B = not_A_implies_not_B.get_right()
+
+                if isinstance(not_A, Not):
+                    A = not_A.get_form()
+                else:
+                    return False
+
+                if isinstance(not_B, Not):
+                    B = not_B.get_form()
+                else:
+                    return False
+
+            else:
+                return False
+
+            # right hand
+            B_implies_A = self.get_right()
+            if isinstance(B_implies_A, Implies):
+                flag = flag and B_implies_A.get_left().is_equal(B)
+                flag = flag and B_implies_A.get_right().is_equal(A)
+            else:
+                return False
+
+        return flag
 
     def is_axiom(self):
-        """???
+        """Check if the formula is any Axiom
+
+        Returns:
+            bool: True if it is any Axiom else False
         """
-        pass
+
+        return self.is_axiom1() or self.is_axiom2() or self.is_axiom3()
 
     def is_equal(self, formula):
         """Checks if the given formula is equal to the formula
