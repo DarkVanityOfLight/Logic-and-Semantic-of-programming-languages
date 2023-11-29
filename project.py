@@ -116,6 +116,7 @@ class Formula:
         Returns:
             bool: true if the formula is equal and false otherwise
         """
+        # TODO: Naive Implementation, replace by recusive
         return self.to_string() == formula.to_string()
 
     def get_tt(self, pretty=False, assignments=None):
@@ -134,6 +135,8 @@ class Formula:
                 only to be used for equivalenz checking.
 
         """
+
+        # TODO: by default return table as pretty printed table
 
         # List of [variable_assignments | truth value]
         table = []
@@ -567,6 +570,7 @@ def test_case_2():
 print("Test case1: ", test_case_1())
 print("Test case2: ", test_case_2())
 
+# TODO: Cleanup and standarize testing
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
 print(Implies(a, And(Not(b), c)).get_tt(pretty=True))
 
