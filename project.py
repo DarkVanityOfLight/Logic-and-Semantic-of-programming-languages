@@ -447,7 +447,7 @@ class Implies(Formula):
         Returns:
             str: The formula on the left side of the implies arrow
         """
-        return f"({self.form1} -> {self.form2})"
+        return f"({self.get_left()} -> {self.get_right()})"
 
     def get_left(self):
         """Returns the formula to the left of the implies arrow (->)
@@ -475,7 +475,7 @@ class Implies(Formula):
         Returns:
             bool: The result of the formula. true or false
         """
-        return not self.form1.evaluate(d) or self.form2.evaluate(d)
+        return not self.get_left().evaluate(d) or self.get_right().evaluate(d)
 
     def get_variables(self):
         """Return all variables in the formula
@@ -483,7 +483,8 @@ class Implies(Formula):
         Returns:
             Set[str]: The variables as a set
         """
-        return self.form1.get_variables().union(self.form2.get_variables())
+        return self.get_left().get_variables().union(
+            self.get_right().get_variables())
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
@@ -508,7 +509,7 @@ class Not(Formula):
         Returns:
             str: The formula with an "not" symbole
         """
-        return f"~({self.form})"
+        return f"~({self.get_form()})"
 
     def get_form(self):
         """Returns the formula without the negation
@@ -524,7 +525,7 @@ class Not(Formula):
         Returns:
             Set[str]: The variables as a set
         """
-        return self.form.get_variables()
+        return self.get_form().get_variables()
 
     def evaluate(self, d):
         """Returns the negation of the given formula
@@ -535,7 +536,7 @@ class Not(Formula):
         Returns:
             bool: negation of the formula
         """
-        return not self.form.evaluate(d)
+        return not self.get_form().evaluate(d)
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
@@ -577,7 +578,7 @@ class And(Formula):
         return self.to_string()
 
     def to_string(self):
-        return f"({self.form1} /\\ {self.form2})"
+        return f"({self.get_left()} /\\ {self.get_right()})"
 
     def get_left(self):
         return self.form1
@@ -595,7 +596,7 @@ class And(Formula):
         Returns:
             bool: The result of the formula. true or false
         """
-        return self.form1.evaluate(d) and self.form2.evaluate(d)
+        return self.get_left().evaluate(d) and self.get_right().evaluate(d)
 
     def get_variables(self):
         """Return all variables in the formula
@@ -603,7 +604,7 @@ class And(Formula):
         Returns:
             Set[str]: The variables as a set
         """
-        return self.form1.get_variables().union(self.form2.get_variables())
+        return self.get_left().get_variables().union(self.get_right().get_variables())
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
@@ -623,7 +624,7 @@ class Or(Formula):
         return self.to_string()
 
     def to_string(self):
-        return f"({self.form1} \\/ {self.form2})"
+        return f"({self.get_left()} \\/ {self.get_right()})"
 
     def get_left(self):
         return self.form1
@@ -641,7 +642,7 @@ class Or(Formula):
         Returns:
             bool: The result of the formula. true or false
         """
-        return self.form1.evaluate(d) or self.form2.evaluate(d)
+        return self.get_left().evaluate(d) or self.get_right().evaluate(d)
 
     def get_variables(self):
         """Return all variables in the formula
@@ -649,7 +650,8 @@ class Or(Formula):
         Returns:
             Set[str]: The variables as a set
         """
-        return self.form1.get_variables().union(self.form2.get_variables())
+        return self.get_left().get_variables().union(
+            self.get_right().get_variables())
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
