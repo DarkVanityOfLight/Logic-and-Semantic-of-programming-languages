@@ -87,15 +87,29 @@ class Formula:
         pass
 
     def modus_ponens(self, a, b):
-        """Applies the Modus Ponens rule to two logical propositions
+        """Applies the Modus Ponens rule to two logical propositions.
 
         Args:
-            a (?): The antecedent proposition
-            b (?): The consequent proposition
+            assumption (Formula): The left-hand assumption.
+            implication (Formula): The implication to be applied.
+
         Returns:
-            (bool): The result of applying Modus Ponens
+            Formula: The result of applying Modus Ponens.
+
+        Raises:
+            ValueError: If the provided implication is not of the form A -> B
+                        or if the left-hand side of the implication does not
+                        match the assumption.
         """
-        pass
+
+        if isinstance(b, Implies):
+            left = b.get_left()
+            if left.is_equal(a):
+                return b.get_right()
+            else:
+                raise ValueError(f"{a} does not match the left hand {left}")
+        else:
+            raise ValueError(f"{b} is not an implication")
 
     def is_axiom1(self):
         """Checks if the given formula is constructed using Axiom 1
@@ -248,7 +262,7 @@ class Formula:
         """Checks if the given formula is equal to the formula
 
         Args:
-            formula (Formula): The Formula to check against
+            formula(Formula): The Formula to check against
 
         Returns:
             (bool): true if the formula is equal and false otherwise
@@ -265,9 +279,9 @@ class Formula:
         value per list will be the evaluation for that assignment
 
         Args:
-            pretty_print=False (bool): return a pretty table string
+            pretty_print = False (bool): return a pretty table string
 
-            assignments=None (List[Dict[str][bool]]):
+            assignments = None (List[Dict[str][bool]]):
                 A list of assignments to evaluate,
                 only to be used for equivalenz checking.
 
@@ -319,7 +333,7 @@ class Formula:
         Check if this formula is logical equivalent to another.
 
         Args:
-            other (Formula): The formula to check against
+            other(Formula): The formula to check against
 
         Returns:
            (bool) If the two formulas are equivalent
@@ -359,7 +373,7 @@ class Formula:
             """
             Create a conjunted formula from a list of variables
             Args:
-                exp (List[Formula]): The list of variables to conjunct
+                exp(List[Formula]): The list of variables to conjunct
             Returns:
                 (Formula) The conjuncted formula
             """
@@ -372,7 +386,7 @@ class Formula:
             """
             Create a disjunct formula from a list of variables
             Args:
-                exp (List[Formula]): The list of variables to disjunct
+                exp(List[Formula]): The list of variables to disjunct
             Returns:
                 (Formula) The disjunct formula
             """
@@ -419,7 +433,7 @@ class Variable(Formula):
         """Returns the assignment of a variable
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d(dict): dictionary with the assigments for the varibales
 
         Returns:
             (bool): assigment for the variable true or false
@@ -461,7 +475,7 @@ class Implies(Formula):
         return f"({self.get_left()} -> {self.get_right()})"
 
     def get_left(self):
-        """Returns the formula to the left of the implies arrow (->)
+        """Returns the formula to the left of the implies arrow ( -> )
 
         Returns:
             (Formula): The formula on the left side of the implies arrow
@@ -469,7 +483,7 @@ class Implies(Formula):
         return self.form1
 
     def get_right(self):
-        """Returns the formula to the right oft the implies arrow (->)
+        """Returns the formula to the right oft the implies arrow ( -> )
 
         Returns:
             (Formula): The formula on the right side of the implies arrow
@@ -478,10 +492,10 @@ class Implies(Formula):
 
     def evaluate(self, d):
         """Evaluates the boolean result of a logical formula,
-            containing an implies (->) operation
+            containing an implies ( -> ) operation
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d(dict): dictionary with the assigments for the varibales
 
         Returns:
             (bool): The result of the formula. true or false
@@ -542,7 +556,7 @@ class Not(Formula):
         """Returns the negation of the given formula
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d(dict): dictionary with the assigments for the varibales
 
         Returns:
             (bool): negation of the formula
@@ -617,7 +631,7 @@ class And(Formula):
             an And (/\\) operation
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d(dict): dictionary with the assigments for the varibales
 
         Returns:
             (bool): The result of the formula. true or false
@@ -658,7 +672,7 @@ class Or(Formula):
         return f"({self.get_left()} \\/ {self.get_right()})"
 
     def get_left(self):
-        """Returns the formula to the left of the or symbol (\\/)
+        """Returns the formula to the left of the or symbol(\\/)
 
         Returns:
             (Formula): The formula on the left side of the or symbol
@@ -666,7 +680,7 @@ class Or(Formula):
         return self.form1
 
     def get_right(self):
-        """Returns the formula to the right of the or symbol (\\/)
+        """Returns the formula to the right of the or symbol(\\/)
 
         Returns:
             (Formula): The formula on the left side of the implies arrow
@@ -675,10 +689,10 @@ class Or(Formula):
 
     def evaluate(self, d):
         """Evaluates the boolean result of a logical formula,
-            containing an Or (\\/) operation
+            containing an Or(\\/) operation
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d(dict): dictionary with the assigments for the varibales
 
         Returns:
             (bool): The result of the formula. true or false
