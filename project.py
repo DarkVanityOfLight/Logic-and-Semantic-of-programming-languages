@@ -288,6 +288,8 @@ class Formula:
 
         """
 
+        # TODO Maybe sort the variables
+
         # List of [variable_assignments | truth value]
         table = []
 
@@ -468,6 +470,7 @@ class Variable(Formula):
             (bool): True if the formulas are equal, False otherwise
         """
         if isinstance(other, Variable):
+            # a = a
             return self.name == other.name
         else:
             return False
@@ -547,6 +550,7 @@ class Implies(Formula):
             (bool): True if the formulas are equal, False otherwise
         """
         if isinstance(other, Implies):
+            # A -> B = A -> B
             return self.get_left().is_equal(other.get_left()) and \
                 self.get_right().is_equal(other.get_right())
         else:
@@ -635,6 +639,7 @@ class Not(Formula):
         Returns:
             (bool): True if the formulas are equal, False otherwise
         """
+        # ~A = ~A
         if isinstance(other, Not):
             return self.get_form().is_equal(other.get_form())
         else:
@@ -713,6 +718,8 @@ class And(Formula):
             (bool): True if the formulas are equal, False otherwise
         """
         if isinstance(other, And):
+            # A /\ B = A /\ B
+            # A /\ B = B /\ A
             return \
                 (self.get_left().is_equal(other.get_left())
                  and self.get_right().is_equal(other.get_right())) or\
@@ -793,6 +800,8 @@ class Or(Formula):
             (bool): True if the formulas are equal, False otherwise
         """
         if isinstance(other, Or):
+            # a \/ b = a \/ b
+            # a \/ b = b \/ a
             return \
                 (self.get_left().is_equal(other.get_left()) and
                  self.get_right().is_equal(other.get_right()))\
@@ -821,27 +830,34 @@ class Proof:
                 and propositions till i
         """
 
+        # We check if we can derive the proof from
+        # a proposition in either our assumptions
+        # or another already proofen proposition
         for phij in self.proof[:i]:
+            # To use modus ponens we obviously have to have an implication
+            # and not a Not
             if (isinstance(phij, Implies)):
+
                 # Try deducing using all assumptions
                 for assumption in self.assumptions:
-                    try:
-                        if phij.modus_ponens(assumption, phii):
-                            return True
-                        else:
-                            continue
-                    except ValueError:
-                        raise "Unreachable"
+                    # Check if we can deduce phii using the assumption
+                    if phij.modus_ponens(assumption, phii):
+                        return True
+                    else:
+                        continue
 
-                # Try deducing using all formulas till i
+                # Try deducing using all proofen propositions till i
                 for phik in self.proof[:i]:
-                    try:
-                        if phij.modus_ponens(phik, phii):
-                            return True
-                        else:
-                            continue
-                    except ValueError:
-                        pass
+                    # Check if we can deduce phii using the proofen
+                    # proposition phik
+                    if phij.modus_ponens(phik, phii):
+                        return True
+                    else:
+                        continue
+
+        # If we can't deduce phii from any already proofen
+        # proposition or assumption, then we cannot deduce phii
+        return False
 
     def verify(self):
         """
@@ -852,11 +868,14 @@ class Proof:
             (bool): True if the proof is correct else False
         """
 
+        # Check that every propositon in our proof can be derived
         for i, phii in enumerate(self.proof):
 
+            # From either an axiom
             if phii.is_axiom():
                 continue
-            # Check if we can derive using modus ponens
+
+            # Or if we can derive it using modus ponens from other propositions
             elif self.can_be_derived(phii, i):
                 continue
             else:
