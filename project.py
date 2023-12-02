@@ -789,105 +789,118 @@ def test_case_2():
     return test.verify()
 
 
-print("Test case1: ", test_case_1())
-print("Test case2: ", test_case_2())
-
 # TODO: Cleanup and standarize testing
 print("Test truth table")
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
 print(Implies(a, And(Not(b), c)).get_tt(pretty=True))
 
-
-print("Check equivalenz")
-a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
-variable_list = [a.name, b.name, c.name]
-assignments = generate_assignment(3)
-assignments = [dict(zip(variable_list, assignment))
+def test_case_equivalenz():
+    # This test case should return True
+    a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
+    variable_list = [a.name, b.name, c.name]
+    assignments = generate_assignment(3)
+    assignments = [dict(zip(variable_list, assignment))
                for assignment in assignments]
-formula1 = Or(a, b)
-print(formula1)
-print(formula1.get_tt(pretty=True, assignments=assignments))
-formula2 = Or(a, Or(b, And(c, Not(c))))
-print(formula2)
-print(Or(a, Or(b, And(c, Not(c)))).get_tt(
-    pretty=True, assignments=assignments))
+    formula1 = Or(a, b)
+    formula2 = Or(a, Or(b, And(c, Not(c))))
+    return formula1.is_equivalent(formula2) 
 
-print(formula1)
-print(formula1.get_tt(pretty=True, assignments=assignments))
-print(formula2)
-print(formula2.get_tt(pretty=True, assignments=assignments))
+def test_case_NNF():
+    # This test case should return True
+    a, b, c = Variable("a"), Variable("b"), Variable("c")
+    formula = Not(Implies(a, Or(b, And(c, Not(c)))))
+    return formula.get_NNF().is_equivalent(formula)
+     
+def test_case_DNF():
+    # This test case should return True
+    a, b, c = Variable("a"), Variable("b"), Variable("c")
+    formula = Not(Implies(a, Or(b, And(c, Not(c)))))
+    return formula.get_DNF().is_equivalent(formula)
 
-print(formula1.is_equivalent(formula2))
+def test_case_is_equal_AND_1():
+    # This test case should return True
+    formula1 = And(a, b)
+    formula2 = And(b, a)
+    return formula1.is_equal(formula2)
+
+def test_case_is_equal_AND_2():
+    # This test case should return True
+    formula1 = And(a, b)
+    formula2 = Not(And(a, b))
+    return not(formula1.is_equal(formula2))
+
+def test_case_is_equal_Or_1():
+    # This test case should return True
+    a, b= Variable("a"), Variable("b")
+    formula1 = Or(a, b)
+    formula2 = Or(b, a)
+    return formula1.is_equal(formula2)
+
+def test_case_is_equal_Or_2():
+    # This test case should return True
+    a, b= Variable("a"), Variable("b")
+    formula1 = Or(a, b)
+    formula2 = Not(Or(a, b))
+    return not(formula1.is_equal(formula2))
+
+def test_case_is_equal_Implies_1():
+    # This test case should return True
+    a, b = Variable("a"), Variable("b")
+    formula1 = Implies(a, b)
+    formula2 = Implies(a, b)
+    return formula1.is_equal(formula2)
+
+def test_case_is_equal_Implies_2():
+    # This test case should return True
+    a, b = Variable("a"), Variable("b")
+    formula1 = Implies(a, b)
+    formula2 = Not(Implies(a, b))
+    return not(formula1.is_equal(formula2))
+
+def test_case_is_equal_Not_1():
+    # This test case should return True
+    a = Variable("a")
+    formula1 = Not(a)
+    formula2 = Not(a)
+    return formula1.is_equal(formula2)
+
+def test_case_is_equal_Not_2():
+    # This test case should return True
+    a = Variable("a")
+    formula1 = Not(a)
+    formula2 = a
+    return not(formula1.is_equal(formula2))
+
+def test_case_is_equal_Base_1():
+    # This test case should return True
+    a = Variable("a")
+    formula1 = a
+    formula2 = a
+    return formula1.is_equal(formula2)
+
+def test_case_is_equal_Base_2():
+    # This test case should return True
+    a = Variable("a")
+    formula1 = a
+    formula2 = Not(a)
+    return not(formula1.is_equal(formula2))
 
 
-print("Test NNF")
-a, b, c = Variable("a"), Variable("b"), Variable("c")
-formula = Not(Implies(a, Or(b, And(c, Not(c)))))
-print(formula)
-print(formula.get_NNF())
-print(formula.get_NNF().is_equivalent(formula))
 
+print("Test case1: ", test_case_1())
+print("Test case2: ", test_case_2())
+print("test case equivalenz: ", test_case_equivalenz())
+print("Test case NNF: ", test_case_NNF())
+print("Test case DNF: ", test_case_DNF())
+print("Test case is_equal AND 1: ", test_case_is_equal_AND_1())
+print("Test case is_equal AND 2: ", test_case_is_equal_AND_2())
+print("Test case is_equal Or 1: ", test_case_is_equal_Or_1())
+print("Test case is_equal Or 2: ", test_case_is_equal_Or_2())
+print("Test case is_equal Implies 1: ", test_case_is_equal_Implies_1())
+print("Test case is_equal Implies 2: ", test_case_is_equal_Implies_2())
+print("Test case is_equal Not 1: ", test_case_is_equal_Not_1())
+print("Test case is_equal Not 2: ", test_case_is_equal_Not_2())
+print("Test case is_equal Base 1: ", test_case_is_equal_Base_1())
+print("Test case is_equal Base 2: ", test_case_is_equal_Base_2())
 
-print("Test DNF")
-a, b, c = Variable("a"), Variable("b"), Variable("c")
-formula = Not(Implies(a, Or(b, And(c, Not(c)))))
-print(formula)
-print(formula.get_DNF())
-print(formula.get_tt(pretty=True))
-print(formula.get_DNF().is_equivalent(formula))
-
-print("Test is_equal And")
-a, b= Variable("a"), Variable("b")
-formula1 = And(a, b)
-formula2 = And(b, a)
-formula3 = Not(And(a, b))
-print(formula1)
-print(formula2)
-print(formula3)
-print(formula1.is_equal(formula2))
-print(formula1.is_equal(formula3))
-
-print("Test is_equal Or")
-a, b= Variable("a"), Variable("b")
-formula1 = Or(a, b)
-formula2 = Or(b, a)
-formula3 = Not(Or(a, b))
-print(formula1)
-print(formula2)
-print(formula3)
-print(formula1.is_equal(formula2))
-print(formula1.is_equal(formula3))
-
-print("Test is_equal Implies")
-a, b = Variable("a"), Variable("b")
-formula1 = Implies(a, b)
-formula2 = Implies(a, b)
-formula3 = Not(Implies(a, b))
-print(formula1)
-print(formula2)
-print(formula3)
-print(formula1.is_equal(formula2))
-print(formula1.is_equal(formula3))
-
-print("Test is_equal Not")
-a = Variable("a")
-formula1 = Not(a)
-formula2 = Not(a)
-formula3 = a
-print(formula1)
-print(formula2)
-print(formula3)
-print(formula1.is_equal(formula2))
-print(formula1.is_equal(formula3))
-
-print("Test is_equal Base-case")
-a = Variable("a")
-formula1 = a
-formula2 = a
-formula3 = Not(a)
-print(formula1)
-print(formula2)
-print(formula3)
-print(formula1.is_equal(formula2))
-print(formula1.is_equal(formula3))
 
