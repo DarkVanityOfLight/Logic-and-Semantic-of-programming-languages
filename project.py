@@ -727,14 +727,54 @@ class Proof:
         self.assumptions = assumptions
         self.proof = proof
 
+    def can_be_derived(self, phii, i):
+        """Check if the formula phii can be derived using modus ponens
+        and the formulas phi0...phij with j<i
+        """
+
+        for phij in self.proof[:i]:
+            if (isinstance(phij, Implies)):
+                # Try deducing using all assumptions
+                for assumption in self.assumptions:
+                    try:
+                        if phij.modus_ponens(assumption, phii):
+                            return True
+                        else:
+                            continue
+                    except ValueError:
+                        raise "Unreachable"
+
+                # Try deducing using all formulas till i
+                for phik in self.proof[:i]:
+                    try:
+                        if phij.modus_ponens(phik, phii):
+                            return True
+                        else:
+                            continue
+                    except ValueError:
+                        pass
+
     def verify(self):
-        """Returns an true if the proof is correct and
-            false if its not correct
+        """Returns True if the proof is correct and
+            False if its not correct
 
         Returns:
             (bool): true if its correct and false if its not correct
         """
-        pass
+
+        # An empty proof is correct?
+        for i, phii in enumerate(self.proof):
+
+            if phii.is_axiom():
+                continue
+            # Check if we can derive using modus ponens
+            elif self.can_be_derived(phii, i):
+                continue
+            else:
+                return False
+
+                # An empty proof is correct I think
+        return True
 
 
 def test_case_1():
