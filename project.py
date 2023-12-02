@@ -288,8 +288,6 @@ class Formula:
 
         """
 
-        # TODO Maybe sort the variables
-
         # List of [variable_assignments | truth value]
         table = []
 
@@ -297,6 +295,7 @@ class Formula:
         if assignments is None:
             # We differentiate between the variable object and it s name
             v = self.get_variables()
+            v = sorted(v, key=lambda x: x.name)
             # In the rest we only work with the names
             variables = [variable.name for variable in v]
 
@@ -348,6 +347,7 @@ class Formula:
         # and generate the truth tabel for that
 
         variables = self.get_variables().union(other.get_variables())
+        variables = sorted(variables, key=lambda x: x.name)
         variable_names = [v.name for v in variables]
         assignments = generate_assignment(len(variables))
         # I feel like here I should have to cast every variables
@@ -370,6 +370,8 @@ class Formula:
 
         # Get the variables and the truth table
         variables = list(self.get_variables())
+        # Get tt sorts our variables, so we have to sort them too
+        variables = sorted(variables, key=lambda x: x.name)
         tt = self.get_tt(pretty=False)
 
         def conjunct(exp):
