@@ -2,8 +2,10 @@
 def pretty_tt(table, variables):
     """Pretty print the truth table
         Args:
-            table [][bool]: The truth table values
-            variables [str]: The variables that appear in the formula
+            table ([][bool]): The truth table values
+            variables ([str]): The variables that appear in the formula
+        Returns:
+            (str): The table in a pretty human readable format
     """
 
     full_str = ""
@@ -51,13 +53,33 @@ def pretty_tt(table, variables):
 
 
 def generate_assignment(size):
-    # For i in range 2 ** len(variables)
-    # convert the number to binary, and cut the leading 0b
-    # then zero fill till we get the full variable length
-    # Convert each value from string to int and then to bool,
-    #  because string to bool doesn't work directly
-    return [[bool(int(x)) for x in bin(i)[2:].zfill(size)]
-            for i in range(2 ** size)]
+    """Generate truth table assignments based on number of variables
+
+    Args:
+        size (int): The number of variables to generate for
+    Returns:
+        (List[][bool]): The truth table assignments, per row
+    """
+
+    # Initialize an empty list to store assignments
+    assignments = []
+
+    # Count up to  2**size
+    for i in range(2 ** size):
+        # Convert the number to binary and remove the '0b' prefix
+        binary_representation = bin(i)[2:]
+
+        # Zero-fill the binary representation to match the specified size
+        binary_representation = binary_representation.zfill(size)
+
+        # Convert each character in the binary representation
+        # to a boolean value
+        assignment = [bool(int(bit)) for bit in binary_representation]
+
+        # Add the assignment to the list
+        assignments.append(assignment)
+
+    return assignments
 
 
 class Formula:
@@ -71,41 +93,156 @@ class Formula:
             a (?): The antecedent proposition
             b (?): The consequent proposition
         Returns:
-            bool: The result of applying Modus Ponens
+            (bool): The result of applying Modus Ponens
         """
         pass
 
     def is_axiom1(self):
         """Checks if the given formula is constructed using Axiom 1
 
+        The Axiom is:
+        A -> (B -> A)
+
         Returns:
-            bool: True if the formula is constructed with Axiom 1,
+            (bool): True if the formula is constructed with Axiom 1,
                 False otherwise
         """
-        pass
+
+        # We always have to check that our operator is
+        # actually a Implication and not a And, Or, Not Operator
+
+        if isinstance(self, Implies):
+            # Get first A
+            A = self.get_left()
+            B_implies_A = self.get_right()
+            # Check the right hand, should be of form B -> A
+            if isinstance(B_implies_A, Implies):
+                # B = righthand.get_left()
+
+                # Check that we have the same A as on the left side
+                return B_implies_A.get_right().is_equal(A)
+
+        return False
 
     def is_axiom2(self):
         """Checks if the given formula is constructed using Axiom 2
 
+        The Axiom is:
+        (A -> (B -> C)) -> ((A -> B) -> (A -> C))
+
         Returns:
-            bool: True if the formula is constructed with Axiom 2,
+            (bool): True if the formula is constructed with Axiom 2,
                 False otherwise
         """
-        pass
+
+        # We always have to check that our operator is
+        # actually a Implication and not a And, Or, Not Operator
+
+        # Indicate if we have the axiom
+        flag = True
+        if isinstance(self, Implies):
+            # left hand (A -> (B -> C))
+            A_implies_B_implies_C = self.get_left()
+
+            A, B, C = None, None, None
+
+            # Unfold left side (A -> (B -> C))
+            if isinstance(A_implies_B_implies_C, Implies):
+                A = A_implies_B_implies_C.get_left()
+
+                B_implies_C = A_implies_B_implies_C.get_left()
+
+                if isinstance(B_implies_C, Implies):
+                    B = B_implies_C.get_left()
+                    C = B_implies_C.get_right()
+                else:
+                    return False
+
+            # right hand ((A -> B) -> (A -> C))
+            A_implies_B_implies_A_implies_C = self.get_right()
+
+            # Unfold right hand ((A -> B) -> (A -> C))
+            if isinstance(A_implies_B_implies_A_implies_C, Implies):
+                A_implies_B = A_implies_B_implies_A_implies_C.get_left()
+                A_implies_C = A_implies_B_implies_A_implies_C.get_right()
+
+                # Unfold A -> B
+                if isinstance(A_implies_B, Implies):
+                    # Check that we have the same A and B here
+                    flag = flag and A_implies_B.get_left().is_equal(A)
+                    flag = flag and A_implies_B.get_right().is_equal(B)
+                else:
+                    return False
+
+                # Unfold A -> C
+                if isinstance(A_implies_C, Implies):
+                    # Check that we have the same A and C here
+                    flag = flag and A_implies_C.get_left().is_equal(A)
+                    flag = flag and A_implies_C.get_right().is_equal(C)
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
+
+        return flag
 
     def is_axiom3(self):
         """Checks if the given formula is constructed using Axiom 3
 
+        The Axiom is:
+        (~A -> ~B) -> (B -> A)
+
         Returns:
-            bool: True if the formula is constructed with Axiom 3,
+            (bool): True if the formula is constructed with Axiom 3,
                 False otherwise
         """
-        pass
+
+        # We always have to check that our operator is
+        # actually a Implication and not a And or Or Operator
+
+        flag = True
+        if isinstance(self, Implies):
+            A, B = None, None
+
+            # left hand
+            not_A_implies_not_B = self.get_left()
+            if isinstance(not_A_implies_not_B, Implies):
+                not_A = not_A_implies_not_B.get_left()
+                not_B = not_A_implies_not_B.get_right()
+
+                if isinstance(not_A, Not):
+                    A = not_A.get_form()
+                else:
+                    return False
+
+                if isinstance(not_B, Not):
+                    B = not_B.get_form()
+                else:
+                    return False
+
+            else:
+                return False
+
+            # right hand
+            B_implies_A = self.get_right()
+            if isinstance(B_implies_A, Implies):
+                flag = flag and B_implies_A.get_left().is_equal(B)
+                flag = flag and B_implies_A.get_right().is_equal(A)
+            else:
+                return False
+
+        return flag
 
     def is_axiom(self):
-        """???
+        """Check if the formula is any Axiom
+
+        Returns:
+            (bool): True if it is any Axiom else False
         """
-        pass
+
+        return self.is_axiom1() or self.is_axiom2() or self.is_axiom3()
 
     def is_equal(self, formula):
         """Checks if the given formula is equal to the formula
@@ -114,12 +251,12 @@ class Formula:
             formula (Formula): The Formula to check against
 
         Returns:
-            bool: true if the formula is equal and false otherwise
+            (bool): true if the formula is equal and false otherwise
         """
         # TODO: Naive Implementation, replace by recusive
         return self.to_string() == formula.to_string()
 
-    def get_tt(self, pretty=False, assignments=None):
+    def get_tt(self, pretty=True, assignments=None):
         """
         Generate a truth tabel for the formula,
         only pretty print will return a string, if
@@ -135,8 +272,6 @@ class Formula:
                 only to be used for equivalenz checking.
 
         """
-
-        # TODO: by default return table as pretty printed table
 
         # List of [variable_assignments | truth value]
         table = []
@@ -203,8 +338,9 @@ class Formula:
         assignments = [dict(zip(variable_names, assignment))
                        for assignment in assignments]
 
-        return self.get_tt(assignments=assignments) == other.get_tt(
-            assignments=assignments)
+        # Kinda ugly but what can you do
+        return (self.get_tt(pretty=False, assignments=assignments) ==
+                other.get_tt(pretty=False, assignments=assignments))
 
     def get_DNF(self):
         """
@@ -217,7 +353,7 @@ class Formula:
 
         # Get the variables and the truth table
         variables = list(self.get_variables())
-        tt = self.get_tt()
+        tt = self.get_tt(pretty=False)
 
         def conjunct(exp):
             """
@@ -275,7 +411,7 @@ class Variable(Formula):
         """Returns the variable as a readable string
 
         Returns:
-            str: variable
+            (str): variable
         """
         return self.name
 
@@ -286,7 +422,7 @@ class Variable(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: assigment for the variable true or false
+            (bool): assigment for the variable true or false
         """
         return d[self.name]
 
@@ -294,7 +430,7 @@ class Variable(Formula):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
         return {self}
 
@@ -316,18 +452,19 @@ class Implies(Formula):
         return self.to_string()
 
     def to_string(self):
-        """Returns the formula to the left of the implies arrow
+        """Returns the formula in human readable form,
+        the implies symbol is ->
 
         Returns:
-            str: The formula on the left side of the implies arrow
+            (str): The formula in human readable form
         """
-        return f"({self.form1} -> {self.form2})"
+        return f"({self.get_left()} -> {self.get_right()})"
 
     def get_left(self):
         """Returns the formula to the left of the implies arrow (->)
 
         Returns:
-            Formula: The formula on the left side of the implies arrow
+            (Formula): The formula on the left side of the implies arrow
         """
         return self.form1
 
@@ -335,7 +472,7 @@ class Implies(Formula):
         """Returns the formula to the right oft the implies arrow (->)
 
         Returns:
-            Formula: The formula on the right side of the implies arrow
+            (Formula): The formula on the right side of the implies arrow
         """
         return self.form2
 
@@ -347,17 +484,18 @@ class Implies(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: The result of the formula. true or false
+            (bool): The result of the formula. true or false
         """
-        return not self.form1.evaluate(d) or self.form2.evaluate(d)
+        return not self.get_left().evaluate(d) or self.get_right().evaluate(d)
 
     def get_variables(self):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
-        return self.form1.get_variables().union(self.form2.get_variables())
+        return self.get_left().get_variables().union(
+            self.get_right().get_variables())
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
@@ -377,18 +515,18 @@ class Not(Formula):
         return self.to_string()
 
     def to_string(self):
-        """Returns the formula with an "not" symbole
+        """Returns the formula in human readable form, the not symbol is ~
 
         Returns:
-            str: The formula with an "not" symbole
+            (str): The formula with an "not" symbole
         """
-        return f"~({self.form})"
+        return f"~({self.get_form()})"
 
     def get_form(self):
         """Returns the formula without the negation
 
         Returns:
-            Formula: The formula without negation
+            (Formula): The formula without negation
         """
         return self.form
 
@@ -396,9 +534,9 @@ class Not(Formula):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
-        return self.form.get_variables()
+        return self.get_form().get_variables()
 
     def evaluate(self, d):
         """Returns the negation of the given formula
@@ -407,9 +545,9 @@ class Not(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: negation of the formula
+            (bool): negation of the formula
         """
-        return not self.form.evaluate(d)
+        return not self.get_form().evaluate(d)
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
@@ -451,12 +589,27 @@ class And(Formula):
         return self.to_string()
 
     def to_string(self):
-        return f"({self.form1} /\\ {self.form2})"
+        """Return the formula in human readable form, and is represented by /\\
+
+        Returns:
+            (str): The formula as human readable string
+        """
+        return f"({self.get_left()} /\\ {self.get_right()})"
 
     def get_left(self):
+        """Returns the formula to the left of the and symbol (/\\)
+
+        Returns:
+            (Formula): The formula on the left side of the and symbol
+        """
         return self.form1
 
     def get_right(self):
+        """Returns the formula to the right of the and symbol (/\\)
+
+        Returns:
+            (Formula): The formula on the right side of the and symbol
+        """
         return self.form2
 
     def evaluate(self, d):
@@ -467,17 +620,18 @@ class And(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: The result of the formula. true or false
+            (bool): The result of the formula. true or false
         """
-        return self.form1.evaluate(d) and self.form2.evaluate(d)
+        return self.get_left().evaluate(d) and self.get_right().evaluate(d)
 
     def get_variables(self):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
-        return self.form1.get_variables().union(self.form2.get_variables())
+        return self.get_left().get_variables().union(
+            self.get_right().get_variables())
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
@@ -497,12 +651,26 @@ class Or(Formula):
         return self.to_string()
 
     def to_string(self):
-        return f"({self.form1} \\/ {self.form2})"
+        """Return the formula in human readable form, or is represented by \\/
+        Returns:
+            (str): The formula as human readable string
+        """
+        return f"({self.get_left()} \\/ {self.get_right()})"
 
     def get_left(self):
+        """Returns the formula to the left of the or symbol (\\/)
+
+        Returns:
+            (Formula): The formula on the left side of the or symbol
+        """
         return self.form1
 
     def get_right(self):
+        """Returns the formula to the right of the or symbol (\\/)
+
+        Returns:
+            (Formula): The formula on the left side of the implies arrow
+        """
         return self.form2
 
     def evaluate(self, d):
@@ -513,17 +681,18 @@ class Or(Formula):
             d (dict): dictionary with the assigments for the varibales
 
         Returns:
-            bool: The result of the formula. true or false
+            (bool): The result of the formula. true or false
         """
-        return self.form1.evaluate(d) or self.form2.evaluate(d)
+        return self.get_left().evaluate(d) or self.get_right().evaluate(d)
 
     def get_variables(self):
         """Return all variables in the formula
 
         Returns:
-            Set[str]: The variables as a set
+            (Set[str]): The variables as a set
         """
-        return self.form1.get_variables().union(self.form2.get_variables())
+        return self.get_left().get_variables().union(
+            self.get_right().get_variables())
 
     def get_NNF(self):
         """Get the formula as Negated normal form(NNF)
@@ -544,7 +713,7 @@ class Proof:
             false if its not correct
 
         Returns:
-            bool: true if its correct and false if its not correct
+            (bool): true if its correct and false if its not correct
         """
         pass
 
@@ -571,10 +740,12 @@ print("Test case1: ", test_case_1())
 print("Test case2: ", test_case_2())
 
 # TODO: Cleanup and standarize testing
+print("Test truth table")
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
 print(Implies(a, And(Not(b), c)).get_tt(pretty=True))
 
 
+print("Check equivalenz")
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
 variable_list = [a.name, b.name, c.name]
 assignments = generate_assignment(3)
@@ -595,12 +766,16 @@ print(formula2.get_tt(pretty=True, assignments=assignments))
 
 print(formula1.is_equivalent(formula2))
 
+
+print("Test NNF")
 a, b, c = Variable("a"), Variable("b"), Variable("c")
 formula = Not(Implies(a, Or(b, And(c, Not(c)))))
 print(formula)
 print(formula.get_NNF())
 print(formula.get_NNF().is_equivalent(formula))
 
+
+print("Test DNF")
 a, b, c = Variable("a"), Variable("b"), Variable("c")
 formula = Not(Implies(a, Or(b, And(c, Not(c)))))
 print(formula)
