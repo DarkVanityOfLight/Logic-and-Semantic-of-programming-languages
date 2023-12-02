@@ -1,9 +1,11 @@
 
 def pretty_tt(table, variables):
     """Pretty print the truth table
+
         Args:
             table ([][bool]): The truth table values
             variables ([str]): The variables that appear in the formula
+
         Returns:
             (str): The table in a pretty human readable format
     """
@@ -57,6 +59,7 @@ def generate_assignment(size):
 
     Args:
         size (int): The number of variables to generate for
+
     Returns:
         (List[][bool]): The truth table assignments, per row
     """
@@ -87,15 +90,35 @@ class Formula:
         pass
 
     def modus_ponens(self, a, b):
-        """Applies the Modus Ponens rule to two logical propositions
+        """
+        Check if we can derive b from this
+        and the assumption a using modus ponens
 
         Args:
-            a (?): The antecedent proposition
-            b (?): The consequent proposition
+            a (Formula): The left-hand assumption.
+            b (Formula): The thing we want to derive
+
         Returns:
-            (bool): The result of applying Modus Ponens
+            (bool): Can b be derived from this formula and the assumption a
+
+        Raises:
+            ValueError: If the provided implication is not of the form A -> B
+                        or if the left-hand side of the implication does not
+                        match the assumption.
         """
-        pass
+
+        # If this isn't an Implication(which shouldn't happen in a proof,
+        # but better be save then sorry)
+        if isinstance(self, Implies):
+            # Check that our assumption matches the antecedent proposition
+            if self.get_left().is_equal(a):
+                # Chat that our consequent proposition matches
+                # the wanted proposition
+                return self.get_right().is_equal(b)
+            else:
+                return False
+        else:
+            raise ValueError(f"{self} is not an implication")
 
     def is_axiom1(self):
         """Checks if the given formula is constructed using Axiom 1
@@ -111,18 +134,21 @@ class Formula:
         # We always have to check that our operator is
         # actually a Implication and not a And, Or, Not Operator
 
-        if isinstance(self, Implies):
-            # Get first A
-            A = self.get_left()
-            B_implies_A = self.get_right()
-            # Check the right hand, should be of form B -> A
-            if isinstance(B_implies_A, Implies):
-                # B = righthand.get_left()
+        if not isinstance(self, Implies):
+            return False
 
-                # Check that we have the same A as on the left side
-                return B_implies_A.get_right().is_equal(A)
+        # Get first A
+        A = self.get_left()
+        B_implies_A = self.get_right()
 
-        return False
+        # Check the right hand, should be of form B -> A
+        if not isinstance(B_implies_A, Implies):
+            return False
+
+        # B = righthand.get_left()
+
+        # Check that we have the same A as on the left side
+        return B_implies_A.get_right().is_equal(A)
 
     def is_axiom2(self):
         """Checks if the given formula is constructed using Axiom 2
@@ -138,55 +164,57 @@ class Formula:
         # We always have to check that our operator is
         # actually a Implication and not a And, Or, Not Operator
 
-        # Indicate if we have the axiom
-        flag = True
-        if isinstance(self, Implies):
-            # left hand (A -> (B -> C))
-            A_implies_B_implies_C = self.get_left()
-
-            A, B, C = None, None, None
-
-            # Unfold left side (A -> (B -> C))
-            if isinstance(A_implies_B_implies_C, Implies):
-                A = A_implies_B_implies_C.get_left()
-
-                B_implies_C = A_implies_B_implies_C.get_left()
-
-                if isinstance(B_implies_C, Implies):
-                    B = B_implies_C.get_left()
-                    C = B_implies_C.get_right()
-                else:
-                    return False
-
-            # right hand ((A -> B) -> (A -> C))
-            A_implies_B_implies_A_implies_C = self.get_right()
-
-            # Unfold right hand ((A -> B) -> (A -> C))
-            if isinstance(A_implies_B_implies_A_implies_C, Implies):
-                A_implies_B = A_implies_B_implies_A_implies_C.get_left()
-                A_implies_C = A_implies_B_implies_A_implies_C.get_right()
-
-                # Unfold A -> B
-                if isinstance(A_implies_B, Implies):
-                    # Check that we have the same A and B here
-                    flag = flag and A_implies_B.get_left().is_equal(A)
-                    flag = flag and A_implies_B.get_right().is_equal(B)
-                else:
-                    return False
-
-                # Unfold A -> C
-                if isinstance(A_implies_C, Implies):
-                    # Check that we have the same A and C here
-                    flag = flag and A_implies_C.get_left().is_equal(A)
-                    flag = flag and A_implies_C.get_right().is_equal(C)
-                else:
-                    return False
-            else:
-                return False
-        else:
+        if not isinstance(self, Implies):
             return False
 
-        return flag
+        # left hand (A -> (B -> C))
+        A_implies_B_implies_C = self.get_left()
+
+        # Unfold left side (A -> (B -> C))
+        if not isinstance(A_implies_B_implies_C, Implies):
+            return False
+
+        A = A_implies_B_implies_C.get_left()
+
+        B_implies_C = A_implies_B_implies_C.get_left()
+
+        if not isinstance(B_implies_C, Implies):
+            return False
+
+        B = B_implies_C.get_left()
+        C = B_implies_C.get_right()
+
+        # -----------------------------
+
+        # right hand ((A -> B) -> (A -> C))
+        A_implies_B_implies_A_implies_C = self.get_right()
+
+        # Unfold right hand ((A -> B) -> (A -> C))
+        if not isinstance(A_implies_B_implies_A_implies_C, Implies):
+            return False
+
+        A_implies_B = A_implies_B_implies_A_implies_C.get_left()
+        A_implies_C = A_implies_B_implies_A_implies_C.get_right()
+
+        # Unfold A -> B
+        if not isinstance(A_implies_B, Implies):
+            return False
+
+        # Check that we have the same A and B here
+        if not A_implies_B.get_left().is_equal(A) or\
+                not A_implies_B.get_right().is_equal(B):
+            return False
+
+        # Unfold A -> C
+        if not isinstance(A_implies_C, Implies):
+            return False
+
+        # Check that we have the same A and C here
+        if not A_implies_C.get_left().is_equal(A) or\
+                not A_implies_C.get_right().is_equal(C):
+            return False
+
+        return True
 
     def is_axiom3(self):
         """Checks if the given formula is constructed using Axiom 3
@@ -202,38 +230,35 @@ class Formula:
         # We always have to check that our operator is
         # actually a Implication and not a And or Or Operator
 
-        flag = True
-        if isinstance(self, Implies):
-            A, B = None, None
+        if not isinstance(self, Implies):
+            return False
 
-            # left hand
-            not_A_implies_not_B = self.get_left()
-            if isinstance(not_A_implies_not_B, Implies):
-                not_A = not_A_implies_not_B.get_left()
-                not_B = not_A_implies_not_B.get_right()
+        # left hand
+        not_A_implies_not_B = self.get_left()
+        if not isinstance(not_A_implies_not_B, Implies):
+            return False
 
-                if isinstance(not_A, Not):
-                    A = not_A.get_form()
-                else:
-                    return False
+        not_A = not_A_implies_not_B.get_left()
+        not_B = not_A_implies_not_B.get_right()
 
-                if isinstance(not_B, Not):
-                    B = not_B.get_form()
-                else:
-                    return False
+        if not isinstance(not_A, Not):
+            return False
 
-            else:
-                return False
+        A = not_A.get_form()
 
-            # right hand
-            B_implies_A = self.get_right()
-            if isinstance(B_implies_A, Implies):
-                flag = flag and B_implies_A.get_left().is_equal(B)
-                flag = flag and B_implies_A.get_right().is_equal(A)
-            else:
-                return False
+        if isinstance(not_B, Not):
+            return False
 
-        return flag
+        B = not_B.get_form()
+
+        # right hand
+        B_implies_A = self.get_right()
+
+        if not isinstance(B_implies_A, Implies):
+            return False
+
+        return B_implies_A.get_left().is_equal(B) and\
+            B_implies_A.get_right().is_equal(A)
 
     def is_axiom(self):
         """Check if the formula is any Axiom
@@ -244,18 +269,6 @@ class Formula:
 
         return self.is_axiom1() or self.is_axiom2() or self.is_axiom3()
 
-    def is_equal(self, formula):
-        """Checks if the given formula is equal to the formula
-
-        Args:
-            formula (Formula): The Formula to check against
-
-        Returns:
-            (bool): true if the formula is equal and false otherwise
-        """
-        # TODO: Naive Implementation, replace by recusive
-        return self.to_string() == formula.to_string()
-
     def get_tt(self, pretty=True, assignments=None):
         """
         Generate a truth tabel for the formula,
@@ -265,11 +278,15 @@ class Formula:
         value per list will be the evaluation for that assignment
 
         Args:
-            pretty_print=False (bool): return a pretty table string
+            pretty_print = True (bool): return a pretty table string
 
-            assignments=None (List[Dict[str][bool]]):
+            assignments = None (List[Dict[str][bool]]):
                 A list of assignments to evaluate,
                 only to be used for equivalenz checking.
+
+        Returns:
+            ([][bool] | str): The table or a pretty string
+                representing the table
 
         """
 
@@ -280,6 +297,7 @@ class Formula:
         if assignments is None:
             # We differentiate between the variable object and it s name
             v = self.get_variables()
+            v = sorted(v, key=lambda x: x.name)
             # In the rest we only work with the names
             variables = [variable.name for variable in v]
 
@@ -319,7 +337,7 @@ class Formula:
         Check if this formula is logical equivalent to another.
 
         Args:
-            other (Formula): The formula to check against
+            other(Formula): The formula to check against
 
         Returns:
            (bool) If the two formulas are equivalent
@@ -331,6 +349,7 @@ class Formula:
         # and generate the truth tabel for that
 
         variables = self.get_variables().union(other.get_variables())
+        variables = sorted(variables, key=lambda x: x.name)
         variable_names = [v.name for v in variables]
         assignments = generate_assignment(len(variables))
         # I feel like here I should have to cast every variables
@@ -348,11 +367,13 @@ class Formula:
         the true entries from a truth table.
 
         Returns:
-            (Formula) A equivalent formula in DNF
+            (Formula): A equivalent formula in DNF
         """
 
         # Get the variables and the truth table
         variables = list(self.get_variables())
+        # Get tt sorts our variables, so we have to sort them too
+        variables = sorted(variables, key=lambda x: x.name)
         tt = self.get_tt(pretty=False)
 
         def conjunct(exp):
@@ -361,7 +382,7 @@ class Formula:
             Args:
                 exp (List[Formula]): The list of variables to conjunct
             Returns:
-                (Formula) The conjuncted formula
+                (Formula): The conjuncted formula
             """
             if len(exp) == 1:
                 return exp[0]
@@ -372,7 +393,7 @@ class Formula:
             """
             Create a disjunct formula from a list of variables
             Args:
-                exp (List[Formula]): The list of variables to disjunct
+                exp(List[Formula]): The list of variables to disjunct
             Returns:
                 (Formula) The disjunct formula
             """
@@ -419,10 +440,11 @@ class Variable(Formula):
         """Returns the assignment of a variable
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d (dict[str][bool]): dictionary with the assigments
+                for the varibales
 
         Returns:
-            (bool): assigment for the variable true or false
+            (bool): assigment for the variable True or False
         """
         return d[self.name]
 
@@ -442,6 +464,21 @@ class Variable(Formula):
         """
         return self
 
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Variable):
+            # a = a
+            return self.name == other.name
+        else:
+            return False
+
 
 class Implies(Formula):
     def __init__(self, form1, form2):
@@ -452,7 +489,8 @@ class Implies(Formula):
         return self.to_string()
 
     def to_string(self):
-        """Returns the formula in human readable form,
+        """
+        Returns the formula in human readable form,
         the implies symbol is ->
 
         Returns:
@@ -461,7 +499,7 @@ class Implies(Formula):
         return f"({self.get_left()} -> {self.get_right()})"
 
     def get_left(self):
-        """Returns the formula to the left of the implies arrow (->)
+        """Returns the formula to the left of the implies arrow ( -> )
 
         Returns:
             (Formula): The formula on the left side of the implies arrow
@@ -469,7 +507,7 @@ class Implies(Formula):
         return self.form1
 
     def get_right(self):
-        """Returns the formula to the right oft the implies arrow (->)
+        """Returns the formula to the right oft the implies arrow ( -> )
 
         Returns:
             (Formula): The formula on the right side of the implies arrow
@@ -478,10 +516,10 @@ class Implies(Formula):
 
     def evaluate(self, d):
         """Evaluates the boolean result of a logical formula,
-            containing an implies (->) operation
+            containing an implies ( -> ) operation
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d(dict): dictionary with the assigments for the varibales
 
         Returns:
             (bool): The result of the formula. true or false
@@ -506,6 +544,22 @@ class Implies(Formula):
         # Unfold implies
         return Or(Not(self.get_left()).get_NNF(), self.get_right().get_NNF())
 
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Implies):
+            # A -> B = A -> B
+            return self.get_left().is_equal(other.get_left()) and \
+                self.get_right().is_equal(other.get_right())
+        else:
+            return False
+
 
 class Not(Formula):
     def __init__(self, form):
@@ -518,7 +572,7 @@ class Not(Formula):
         """Returns the formula in human readable form, the not symbol is ~
 
         Returns:
-            (str): The formula with an "not" symbole
+            (str): The formula as a string
         """
         return f"~({self.get_form()})"
 
@@ -542,7 +596,8 @@ class Not(Formula):
         """Returns the negation of the given formula
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d (dict[str][bool]): dictionary with the
+                assigments for the varibales
 
         Returns:
             (bool): negation of the formula
@@ -578,6 +633,21 @@ class Not(Formula):
         # Something didn't get implemented yet
         else:
             raise "Unreachable"
+
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        # ~A = ~A
+        if isinstance(other, Not):
+            return self.get_form().is_equal(other.get_form())
+        else:
+            return False
 
 
 class And(Formula):
@@ -617,7 +687,8 @@ class And(Formula):
             an And (/\\) operation
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d (dict[str][bool]): dictionary with the
+                assigments for the varibales
 
         Returns:
             (bool): The result of the formula. true or false
@@ -641,6 +712,26 @@ class And(Formula):
         """
         return And(self.get_left().get_NNF(), self.get_right().get_NNF())
 
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, And):
+            # A /\ B = A /\ B
+            # A /\ B = B /\ A
+            return \
+                (self.get_left().is_equal(other.get_left())
+                 and self.get_right().is_equal(other.get_right())) or\
+                (self.get_right().is_equal(other.get_left())
+                 and self.get_left().is_equal(other.get_right()))
+        else:
+            return False
+
 
 class Or(Formula):
     def __init__(self, form1, form2):
@@ -658,7 +749,7 @@ class Or(Formula):
         return f"({self.get_left()} \\/ {self.get_right()})"
 
     def get_left(self):
-        """Returns the formula to the left of the or symbol (\\/)
+        """Returns the formula to the left of the or symbol(\\/)
 
         Returns:
             (Formula): The formula on the left side of the or symbol
@@ -666,7 +757,7 @@ class Or(Formula):
         return self.form1
 
     def get_right(self):
-        """Returns the formula to the right of the or symbol (\\/)
+        """Returns the formula to the right of the or symbol(\\/)
 
         Returns:
             (Formula): The formula on the left side of the implies arrow
@@ -675,10 +766,11 @@ class Or(Formula):
 
     def evaluate(self, d):
         """Evaluates the boolean result of a logical formula,
-            containing an Or (\\/) operation
+            containing an Or(\\/) operation
 
         Args:
-            d (dict): dictionary with the assigments for the varibales
+            d (dict[str][bool]): dictionary with the
+                assigments for the varibales
 
         Returns:
             (bool): The result of the formula. true or false
@@ -702,20 +794,99 @@ class Or(Formula):
         """
         return Or(self.get_left().get_NNF(), self.get_right().get_NNF())
 
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Or):
+            # a \/ b = a \/ b
+            # a \/ b = b \/ a
+            return \
+                (self.get_left().is_equal(other.get_left()) and
+                 self.get_right().is_equal(other.get_right()))\
+                or (self.get_right().is_equal(other.get_left()) and
+                    self.get_left().is_equal(other.get_right()))
+        else:
+            return False
+
 
 class Proof:
     def __init__(self, assumptions, proof):
         self.assumptions = assumptions
         self.proof = proof
 
+    def can_be_derived(self, phii, i):
+        """
+        Check if the formula phii can be derived using modus ponens
+        and the formulas phi0...phij with j<i
+
+        Args:
+            phii (Formula): The formula to derive
+            i (int): The position of phii in our proof
+                (aka until where the proof is already correct)
+        Returns:
+            (bool): True if phii can be derived using the assumptions
+                and propositions till i
+        """
+
+        # We check if we can derive the proof from
+        # a proposition in either our assumptions
+        # or another already proofen proposition
+        for phij in self.proof[:i]:
+            # To use modus ponens we obviously have to have an implication
+            # and not a Not
+            if (isinstance(phij, Implies)):
+
+                # Try deducing using all assumptions
+                for assumption in self.assumptions:
+                    # Check if we can deduce phii using the assumption
+                    if phij.modus_ponens(assumption, phii):
+                        return True
+                    else:
+                        continue
+
+                # Try deducing using all proofen propositions till i
+                for phik in self.proof[:i]:
+                    # Check if we can deduce phii using the proofen
+                    # proposition phik
+                    if phij.modus_ponens(phik, phii):
+                        return True
+                    else:
+                        continue
+
+        # If we can't deduce phii from any already proofen
+        # proposition or assumption, then we cannot deduce phii
+        return False
+
     def verify(self):
-        """Returns an true if the proof is correct and
-            false if its not correct
+        """
+        Returns True if the proof is correct and
+        False if its not correct
 
         Returns:
-            (bool): true if its correct and false if its not correct
+            (bool): True if the proof is correct else False
         """
-        pass
+
+        # Check that every propositon in our proof can be derived
+        for i, phii in enumerate(self.proof):
+
+            # From either an axiom
+            if phii.is_axiom():
+                continue
+
+            # Or if we can derive it using modus ponens from other propositions
+            elif self.can_be_derived(phii, i):
+                continue
+            else:
+                return False
+
+        # An empty proof is correct I think
+        return True
 
 
 def test_case_1():
@@ -736,49 +907,127 @@ def test_case_2():
     return test.verify()
 
 
-print("Test case1: ", test_case_1())
-print("Test case2: ", test_case_2())
-
-# TODO: Cleanup and standarize testing
 print("Test truth table")
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
 print(Implies(a, And(Not(b), c)).get_tt(pretty=True))
 
 
-print("Check equivalenz")
-a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
-variable_list = [a.name, b.name, c.name]
-assignments = generate_assignment(3)
-assignments = [dict(zip(variable_list, assignment))
-               for assignment in assignments]
-formula1 = Or(a, b)
-print(formula1)
-print(formula1.get_tt(pretty=True, assignments=assignments))
-formula2 = Or(a, Or(b, And(c, Not(c))))
-print(formula2)
-print(Or(a, Or(b, And(c, Not(c)))).get_tt(
-    pretty=True, assignments=assignments))
-
-print(formula1)
-print(formula1.get_tt(pretty=True, assignments=assignments))
-print(formula2)
-print(formula2.get_tt(pretty=True, assignments=assignments))
-
-print(formula1.is_equivalent(formula2))
+def test_case_equivalenz():
+    # This test case should return True
+    a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
+    variable_list = [a.name, b.name, c.name]
+    assignments = generate_assignment(3)
+    assignments = [dict(zip(variable_list, assignment))
+                   for assignment in assignments]
+    formula1 = Or(a, b)
+    formula2 = Or(a, Or(b, And(c, Not(c))))
+    return formula1.is_equivalent(formula2)
 
 
-print("Test NNF")
-a, b, c = Variable("a"), Variable("b"), Variable("c")
-formula = Not(Implies(a, Or(b, And(c, Not(c)))))
-print(formula)
-print(formula.get_NNF())
-print(formula.get_NNF().is_equivalent(formula))
+def test_case_NNF():
+    # This test case should return True
+    a, b, c = Variable("a"), Variable("b"), Variable("c")
+    formula = Not(Implies(a, Or(b, And(c, Not(c)))))
+    return formula.get_NNF().is_equivalent(formula)
 
 
-print("Test DNF")
-a, b, c = Variable("a"), Variable("b"), Variable("c")
-formula = Not(Implies(a, Or(b, And(c, Not(c)))))
-print(formula)
-print(formula.get_DNF())
-print(formula.get_tt(pretty=True))
-print(formula.get_DNF().is_equivalent(formula))
+def test_case_DNF():
+    # This test case should return True
+    a, b, c = Variable("a"), Variable("b"), Variable("c")
+    formula = Not(Implies(a, Or(b, And(c, Not(c)))))
+    return formula.get_DNF().is_equivalent(formula)
+
+
+def test_case_is_equal_AND_1():
+    # This test case should return True
+    formula1 = And(a, b)
+    formula2 = And(b, a)
+    return formula1.is_equal(formula2)
+
+
+def test_case_is_equal_AND_2():
+    # This test case should return True
+    formula1 = And(a, b)
+    formula2 = Not(And(a, b))
+    return not (formula1.is_equal(formula2))
+
+
+def test_case_is_equal_Or_1():
+    # This test case should return True
+    a, b = Variable("a"), Variable("b")
+    formula1 = Or(a, b)
+    formula2 = Or(b, a)
+    return formula1.is_equal(formula2)
+
+
+def test_case_is_equal_Or_2():
+    # This test case should return True
+    a, b = Variable("a"), Variable("b")
+    formula1 = Or(a, b)
+    formula2 = Not(Or(a, b))
+    return not (formula1.is_equal(formula2))
+
+
+def test_case_is_equal_Implies_1():
+    # This test case should return True
+    a, b = Variable("a"), Variable("b")
+    formula1 = Implies(a, b)
+    formula2 = Implies(a, b)
+    return formula1.is_equal(formula2)
+
+
+def test_case_is_equal_Implies_2():
+    # This test case should return True
+    a, b = Variable("a"), Variable("b")
+    formula1 = Implies(a, b)
+    formula2 = Not(Implies(a, b))
+    return not (formula1.is_equal(formula2))
+
+
+def test_case_is_equal_Not_1():
+    # This test case should return True
+    a = Variable("a")
+    formula1 = Not(a)
+    formula2 = Not(a)
+    return formula1.is_equal(formula2)
+
+
+def test_case_is_equal_Not_2():
+    # This test case should return True
+    a = Variable("a")
+    formula1 = Not(a)
+    formula2 = a
+    return not (formula1.is_equal(formula2))
+
+
+def test_case_is_equal_Base_1():
+    # This test case should return True
+    a = Variable("a")
+    formula1 = a
+    formula2 = a
+    return formula1.is_equal(formula2)
+
+
+def test_case_is_equal_Base_2():
+    # This test case should return True
+    a = Variable("a")
+    formula1 = a
+    formula2 = Not(a)
+    return not (formula1.is_equal(formula2))
+
+
+print("Test case1: ", test_case_1())
+print("Test case2: ", test_case_2())
+print("test case equivalenz: ", test_case_equivalenz())
+print("Test case NNF: ", test_case_NNF())
+print("Test case DNF: ", test_case_DNF())
+print("Test case is_equal AND 1: ", test_case_is_equal_AND_1())
+print("Test case is_equal AND 2: ", test_case_is_equal_AND_2())
+print("Test case is_equal Or 1: ", test_case_is_equal_Or_1())
+print("Test case is_equal Or 2: ", test_case_is_equal_Or_2())
+print("Test case is_equal Implies 1: ", test_case_is_equal_Implies_1())
+print("Test case is_equal Implies 2: ", test_case_is_equal_Implies_2())
+print("Test case is_equal Not 1: ", test_case_is_equal_Not_1())
+print("Test case is_equal Not 2: ", test_case_is_equal_Not_2())
+print("Test case is_equal Base 1: ", test_case_is_equal_Base_1())
+print("Test case is_equal Base 2: ", test_case_is_equal_Base_2())

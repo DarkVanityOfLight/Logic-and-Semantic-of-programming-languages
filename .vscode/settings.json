@@ -12,5 +12,7 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true
     },
-    "coqtop.binPath": "/usr/bin/coqtop"
+    "coqtop.binPath": "/usr/bin/coqtop",
+    "editor.useTabStops": false,
+    "editor.detectIndentation": false
 }
