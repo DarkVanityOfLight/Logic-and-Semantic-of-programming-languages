@@ -87,14 +87,15 @@ class Formula:
         pass
 
     def modus_ponens(self, a, b):
-        """Applies the Modus Ponens rule to two logical propositions.
+        """Check if we can derive b from this
+        and the assumption a using modus ponens
 
         Args:
-            assumption (Formula): The left-hand assumption.
-            implication (Formula): The implication to be applied.
+            a (Formula): The left-hand assumption.
+            b (Formula): The thing we want to derive
 
         Returns:
-            Formula: The result of applying Modus Ponens.
+            bool: Can b be derived from this formula and the assumption a
 
         Raises:
             ValueError: If the provided implication is not of the form A -> B
@@ -102,14 +103,18 @@ class Formula:
                         match the assumption.
         """
 
-        if isinstance(b, Implies):
-            left = b.get_left()
-            if left.is_equal(a):
-                return b.get_right()
+        # If this isn't an Implication(which shouldn't happen in a proof,
+        # but better be save then sorry)
+        if isinstance(self, Implies):
+            # Check that our assumption matches the antecedent proposition
+            if self.get_left().is_equal(a):
+                # Chat that our consequent proposition matches
+                # the wanted proposition
+                return self.get_right().is_equal(b)
             else:
-                raise ValueError(f"{a} does not match the left hand {left}")
+                return False
         else:
-            raise ValueError(f"{b} is not an implication")
+            raise ValueError(f"{self} is not an implication")
 
     def is_axiom1(self):
         """Checks if the given formula is constructed using Axiom 1
