@@ -1,9 +1,11 @@
 
 def pretty_tt(table, variables):
     """Pretty print the truth table
+
         Args:
             table ([][bool]): The truth table values
             variables ([str]): The variables that appear in the formula
+
         Returns:
             (str): The table in a pretty human readable format
     """
@@ -57,6 +59,7 @@ def generate_assignment(size):
 
     Args:
         size (int): The number of variables to generate for
+
     Returns:
         (List[][bool]): The truth table assignments, per row
     """
@@ -87,7 +90,8 @@ class Formula:
         pass
 
     def modus_ponens(self, a, b):
-        """Check if we can derive b from this
+        """
+        Check if we can derive b from this
         and the assumption a using modus ponens
 
         Args:
@@ -95,7 +99,7 @@ class Formula:
             b (Formula): The thing we want to derive
 
         Returns:
-            bool: Can b be derived from this formula and the assumption a
+            (bool): Can b be derived from this formula and the assumption a
 
         Raises:
             ValueError: If the provided implication is not of the form A -> B
@@ -263,18 +267,6 @@ class Formula:
 
         return self.is_axiom1() or self.is_axiom2() or self.is_axiom3()
 
-    def is_equal(self, formula):
-        """Checks if the given formula is equal to the formula
-
-        Args:
-            formula(Formula): The Formula to check against
-
-        Returns:
-            (bool): true if the formula is equal and false otherwise
-        """
-        # TODO: Naive Implementation, replace by recusive
-        return self.to_string() == formula.to_string()
-
     def get_tt(self, pretty=True, assignments=None):
         """
         Generate a truth tabel for the formula,
@@ -284,11 +276,15 @@ class Formula:
         value per list will be the evaluation for that assignment
 
         Args:
-            pretty_print = False (bool): return a pretty table string
+            pretty_print = True (bool): return a pretty table string
 
             assignments = None (List[Dict[str][bool]]):
                 A list of assignments to evaluate,
                 only to be used for equivalenz checking.
+
+        Returns:
+            ([][bool] | str): The table or a pretty string
+                representing the table
 
         """
 
@@ -367,7 +363,7 @@ class Formula:
         the true entries from a truth table.
 
         Returns:
-            (Formula) A equivalent formula in DNF
+            (Formula): A equivalent formula in DNF
         """
 
         # Get the variables and the truth table
@@ -378,9 +374,9 @@ class Formula:
             """
             Create a conjunted formula from a list of variables
             Args:
-                exp(List[Formula]): The list of variables to conjunct
+                exp (List[Formula]): The list of variables to conjunct
             Returns:
-                (Formula) The conjuncted formula
+                (Formula): The conjuncted formula
             """
             if len(exp) == 1:
                 return exp[0]
@@ -438,10 +434,11 @@ class Variable(Formula):
         """Returns the assignment of a variable
 
         Args:
-            d(dict): dictionary with the assigments for the varibales
+            d (dict[str][bool]): dictionary with the assigments
+                for the varibales
 
         Returns:
-            (bool): assigment for the variable true or false
+            (bool): assigment for the variable True or False
         """
         return d[self.name]
 
@@ -461,6 +458,20 @@ class Variable(Formula):
         """
         return self
 
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Variable):
+            return self.name == other.name
+        else:
+            return False
+
 
 class Implies(Formula):
     def __init__(self, form1, form2):
@@ -471,7 +482,8 @@ class Implies(Formula):
         return self.to_string()
 
     def to_string(self):
-        """Returns the formula in human readable form,
+        """
+        Returns the formula in human readable form,
         the implies symbol is ->
 
         Returns:
@@ -525,6 +537,21 @@ class Implies(Formula):
         # Unfold implies
         return Or(Not(self.get_left()).get_NNF(), self.get_right().get_NNF())
 
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Implies):
+            return self.get_left().is_equal(other.get_left()) and \
+                self.get_right().is_equal(other.get_right())
+        else:
+            return False
+
 
 class Not(Formula):
     def __init__(self, form):
@@ -537,7 +564,7 @@ class Not(Formula):
         """Returns the formula in human readable form, the not symbol is ~
 
         Returns:
-            (str): The formula with an "not" symbole
+            (str): The formula as a string
         """
         return f"~({self.get_form()})"
 
@@ -561,7 +588,8 @@ class Not(Formula):
         """Returns the negation of the given formula
 
         Args:
-            d(dict): dictionary with the assigments for the varibales
+            d (dict[str][bool]): dictionary with the
+                assigments for the varibales
 
         Returns:
             (bool): negation of the formula
@@ -597,6 +625,20 @@ class Not(Formula):
         # Something didn't get implemented yet
         else:
             raise "Unreachable"
+
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Not):
+            return self.get_form().is_equal(other.get_form())
+        else:
+            return False
 
 
 class And(Formula):
@@ -636,7 +678,8 @@ class And(Formula):
             an And (/\\) operation
 
         Args:
-            d(dict): dictionary with the assigments for the varibales
+            d (dict[str][bool]): dictionary with the
+                assigments for the varibales
 
         Returns:
             (bool): The result of the formula. true or false
@@ -659,6 +702,24 @@ class And(Formula):
             (Formula): The formula as NNF
         """
         return And(self.get_left().get_NNF(), self.get_right().get_NNF())
+
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, And):
+            return \
+                (self.get_left().is_equal(other.get_left())
+                 and self.get_right().is_equal(other.get_right())) or\
+                (self.get_right().is_equal(other.get_left())
+                 and self.get_left().is_equal(other.get_right()))
+        else:
+            return False
 
 
 class Or(Formula):
@@ -697,7 +758,8 @@ class Or(Formula):
             containing an Or(\\/) operation
 
         Args:
-            d(dict): dictionary with the assigments for the varibales
+            d (dict[str][bool]): dictionary with the
+                assigments for the varibales
 
         Returns:
             (bool): The result of the formula. true or false
@@ -721,6 +783,24 @@ class Or(Formula):
         """
         return Or(self.get_left().get_NNF(), self.get_right().get_NNF())
 
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            (bool): True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Or):
+            return \
+                (self.get_left().is_equal(other.get_left()) and
+                 self.get_right().is_equal(other.get_right()))\
+                or (self.get_right().is_equal(other.get_left()) and
+                    self.get_left().is_equal(other.get_right()))
+        else:
+            return False
+
 
 class Proof:
     def __init__(self, assumptions, proof):
@@ -728,8 +808,17 @@ class Proof:
         self.proof = proof
 
     def can_be_derived(self, phii, i):
-        """Check if the formula phii can be derived using modus ponens
+        """
+        Check if the formula phii can be derived using modus ponens
         and the formulas phi0...phij with j<i
+
+        Args:
+            phii (Formula): The formula to derive
+            i (int): The position of phii in our proof
+                (aka until where the proof is already correct)
+        Returns:
+            (bool): True if phii can be derived using the assumptions
+                and propositions till i
         """
 
         for phij in self.proof[:i]:
@@ -755,14 +844,14 @@ class Proof:
                         pass
 
     def verify(self):
-        """Returns True if the proof is correct and
-            False if its not correct
+        """
+        Returns True if the proof is correct and
+        False if its not correct
 
         Returns:
-            (bool): true if its correct and false if its not correct
+            (bool): True if the proof is correct else False
         """
 
-        # An empty proof is correct?
         for i, phii in enumerate(self.proof):
 
             if phii.is_axiom():
@@ -773,7 +862,7 @@ class Proof:
             else:
                 return False
 
-                # An empty proof is correct I think
+        # An empty proof is correct I think
         return True
 
 
@@ -841,3 +930,58 @@ print(formula)
 print(formula.get_DNF())
 print(formula.get_tt(pretty=True))
 print(formula.get_DNF().is_equivalent(formula))
+
+print("Test is_equal And")
+a, b = Variable("a"), Variable("b")
+formula1 = And(a, b)
+formula2 = And(b, a)
+formula3 = Not(And(a, b))
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
+print("Test is_equal Or")
+a, b = Variable("a"), Variable("b")
+formula1 = Or(a, b)
+formula2 = Or(b, a)
+formula3 = Not(Or(a, b))
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
+print("Test is_equal Implies")
+a, b = Variable("a"), Variable("b")
+formula1 = Implies(a, b)
+formula2 = Implies(a, b)
+formula3 = Not(Implies(a, b))
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
+print("Test is_equal Not")
+a = Variable("a")
+formula1 = Not(a)
+formula2 = Not(a)
+formula3 = a
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
+print("Test is_equal Base-case")
+a = Variable("a")
+formula1 = a
+formula2 = a
+formula3 = Not(a)
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
