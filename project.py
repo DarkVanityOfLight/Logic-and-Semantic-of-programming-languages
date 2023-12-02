@@ -244,17 +244,6 @@ class Formula:
 
         return self.is_axiom1() or self.is_axiom2() or self.is_axiom3()
 
-    def is_equal(self, formula):
-        """Checks if the given formula is equal to the formula
-
-        Args:
-            formula (Formula): The Formula to check against
-
-        Returns:
-            (bool): true if the formula is equal and false otherwise
-        """
-        # TODO: Naive Implementation, replace by recusive
-        return self.to_string() == formula.to_string()
 
     def get_tt(self, pretty=True, assignments=None):
         """
@@ -441,6 +430,19 @@ class Variable(Formula):
             (Formula): The formula as NNF
         """
         return self
+    
+    def is_equal (self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            bool: True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Variable):
+            return self.name == other.name
+        else: return False 
 
 
 class Implies(Formula):
@@ -505,7 +507,19 @@ class Implies(Formula):
         """
         # Unfold implies
         return Or(Not(self.get_left()).get_NNF(), self.get_right().get_NNF())
+    
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
 
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            bool: True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Implies): 
+            return self.get_left().is_equal(other.get_left()) and self.get_right().is_equal(other.get_right())
+        else: return False
 
 class Not(Formula):
     def __init__(self, form):
@@ -578,6 +592,19 @@ class Not(Formula):
         # Something didn't get implemented yet
         else:
             raise "Unreachable"
+    
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            bool: True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Not):
+            return self.get_form().is_equal(other.get_form())
+        else: return False
 
 
 class And(Formula):
@@ -640,6 +667,19 @@ class And(Formula):
             (Formula): The formula as NNF
         """
         return And(self.get_left().get_NNF(), self.get_right().get_NNF())
+    
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            bool: True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, And):
+            return (self.get_left().is_equal(other.get_left()) and self.get_right().is_equal(other.get_right())) or (self.get_right().is_equal(other.get_left()) and self.get_left().is_equal(other.get_right())) 
+        else: return False
 
 
 class Or(Formula):
@@ -701,6 +741,19 @@ class Or(Formula):
             (Formula): The formula as NNF
         """
         return Or(self.get_left().get_NNF(), self.get_right().get_NNF())
+    
+    def is_equal(self, other):
+        """Checks if one formula is equal to another
+
+        Args:
+            other (Formula): The second formula
+
+        Returns:
+            bool: True if the formulas are equal, False otherwise
+        """
+        if isinstance(other, Or):    
+            return (self.get_left().is_equal(other.get_left()) and self.get_right().is_equal(other.get_right())) or (self.get_right().is_equal(other.get_left()) and self.get_left().is_equal(other.get_right())) 
+        else: return False
 
 
 class Proof:
@@ -782,3 +835,59 @@ print(formula)
 print(formula.get_DNF())
 print(formula.get_tt(pretty=True))
 print(formula.get_DNF().is_equivalent(formula))
+
+print("Test is_equal And")
+a, b= Variable("a"), Variable("b")
+formula1 = And(a, b)
+formula2 = And(b, a)
+formula3 = Not(And(a, b))
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
+print("Test is_equal Or")
+a, b= Variable("a"), Variable("b")
+formula1 = Or(a, b)
+formula2 = Or(b, a)
+formula3 = Not(Or(a, b))
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
+print("Test is_equal Implies")
+a, b = Variable("a"), Variable("b")
+formula1 = Implies(a, b)
+formula2 = Implies(a, b)
+formula3 = Not(Implies(a, b))
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
+print("Test is_equal Not")
+a = Variable("a")
+formula1 = Not(a)
+formula2 = Not(a)
+formula3 = a
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
+print("Test is_equal Base-case")
+a = Variable("a")
+formula1 = a
+formula2 = a
+formula3 = Not(a)
+print(formula1)
+print(formula2)
+print(formula3)
+print(formula1.is_equal(formula2))
+print(formula1.is_equal(formula3))
+
