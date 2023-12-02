@@ -134,18 +134,21 @@ class Formula:
         # We always have to check that our operator is
         # actually a Implication and not a And, Or, Not Operator
 
-        if isinstance(self, Implies):
-            # Get first A
-            A = self.get_left()
-            B_implies_A = self.get_right()
-            # Check the right hand, should be of form B -> A
-            if isinstance(B_implies_A, Implies):
-                # B = righthand.get_left()
+        if not isinstance(self, Implies):
+            return False
 
-                # Check that we have the same A as on the left side
-                return B_implies_A.get_right().is_equal(A)
+        # Get first A
+        A = self.get_left()
+        B_implies_A = self.get_right()
 
-        return False
+        # Check the right hand, should be of form B -> A
+        if not isinstance(B_implies_A, Implies):
+            return False
+
+        # B = righthand.get_left()
+
+        # Check that we have the same A as on the left side
+        return B_implies_A.get_right().is_equal(A)
 
     def is_axiom2(self):
         """Checks if the given formula is constructed using Axiom 2
@@ -161,55 +164,57 @@ class Formula:
         # We always have to check that our operator is
         # actually a Implication and not a And, Or, Not Operator
 
-        # Indicate if we have the axiom
-        flag = True
-        if isinstance(self, Implies):
-            # left hand (A -> (B -> C))
-            A_implies_B_implies_C = self.get_left()
-
-            A, B, C = None, None, None
-
-            # Unfold left side (A -> (B -> C))
-            if isinstance(A_implies_B_implies_C, Implies):
-                A = A_implies_B_implies_C.get_left()
-
-                B_implies_C = A_implies_B_implies_C.get_left()
-
-                if isinstance(B_implies_C, Implies):
-                    B = B_implies_C.get_left()
-                    C = B_implies_C.get_right()
-                else:
-                    return False
-
-            # right hand ((A -> B) -> (A -> C))
-            A_implies_B_implies_A_implies_C = self.get_right()
-
-            # Unfold right hand ((A -> B) -> (A -> C))
-            if isinstance(A_implies_B_implies_A_implies_C, Implies):
-                A_implies_B = A_implies_B_implies_A_implies_C.get_left()
-                A_implies_C = A_implies_B_implies_A_implies_C.get_right()
-
-                # Unfold A -> B
-                if isinstance(A_implies_B, Implies):
-                    # Check that we have the same A and B here
-                    flag = flag and A_implies_B.get_left().is_equal(A)
-                    flag = flag and A_implies_B.get_right().is_equal(B)
-                else:
-                    return False
-
-                # Unfold A -> C
-                if isinstance(A_implies_C, Implies):
-                    # Check that we have the same A and C here
-                    flag = flag and A_implies_C.get_left().is_equal(A)
-                    flag = flag and A_implies_C.get_right().is_equal(C)
-                else:
-                    return False
-            else:
-                return False
-        else:
+        if not isinstance(self, Implies):
             return False
 
-        return flag
+        # left hand (A -> (B -> C))
+        A_implies_B_implies_C = self.get_left()
+
+        # Unfold left side (A -> (B -> C))
+        if not isinstance(A_implies_B_implies_C, Implies):
+            return False
+
+        A = A_implies_B_implies_C.get_left()
+
+        B_implies_C = A_implies_B_implies_C.get_left()
+
+        if not isinstance(B_implies_C, Implies):
+            return False
+
+        B = B_implies_C.get_left()
+        C = B_implies_C.get_right()
+
+        # -----------------------------
+
+        # right hand ((A -> B) -> (A -> C))
+        A_implies_B_implies_A_implies_C = self.get_right()
+
+        # Unfold right hand ((A -> B) -> (A -> C))
+        if not isinstance(A_implies_B_implies_A_implies_C, Implies):
+            return False
+
+        A_implies_B = A_implies_B_implies_A_implies_C.get_left()
+        A_implies_C = A_implies_B_implies_A_implies_C.get_right()
+
+        # Unfold A -> B
+        if not isinstance(A_implies_B, Implies):
+            return False
+
+        # Check that we have the same A and B here
+        if not A_implies_B.get_left().is_equal(A) or\
+                not A_implies_B.get_right().is_equal(B):
+            return False
+
+        # Unfold A -> C
+        if not isinstance(A_implies_C, Implies):
+            return False
+
+        # Check that we have the same A and C here
+        if not A_implies_C.get_left().is_equal(A) or\
+                not A_implies_C.get_right().is_equal(C):
+            return False
+
+        return True
 
     def is_axiom3(self):
         """Checks if the given formula is constructed using Axiom 3
@@ -225,38 +230,35 @@ class Formula:
         # We always have to check that our operator is
         # actually a Implication and not a And or Or Operator
 
-        flag = True
-        if isinstance(self, Implies):
-            A, B = None, None
+        if not isinstance(self, Implies):
+            return False
 
-            # left hand
-            not_A_implies_not_B = self.get_left()
-            if isinstance(not_A_implies_not_B, Implies):
-                not_A = not_A_implies_not_B.get_left()
-                not_B = not_A_implies_not_B.get_right()
+        # left hand
+        not_A_implies_not_B = self.get_left()
+        if not isinstance(not_A_implies_not_B, Implies):
+            return False
 
-                if isinstance(not_A, Not):
-                    A = not_A.get_form()
-                else:
-                    return False
+        not_A = not_A_implies_not_B.get_left()
+        not_B = not_A_implies_not_B.get_right()
 
-                if isinstance(not_B, Not):
-                    B = not_B.get_form()
-                else:
-                    return False
+        if not isinstance(not_A, Not):
+            return False
 
-            else:
-                return False
+        A = not_A.get_form()
 
-            # right hand
-            B_implies_A = self.get_right()
-            if isinstance(B_implies_A, Implies):
-                flag = flag and B_implies_A.get_left().is_equal(B)
-                flag = flag and B_implies_A.get_right().is_equal(A)
-            else:
-                return False
+        if isinstance(not_B, Not):
+            return False
 
-        return flag
+        B = not_B.get_form()
+
+        # right hand
+        B_implies_A = self.get_right()
+
+        if not isinstance(B_implies_A, Implies):
+            return False
+
+        return B_implies_A.get_left().is_equal(B) and\
+            B_implies_A.get_right().is_equal(A)
 
     def is_axiom(self):
         """Check if the formula is any Axiom
