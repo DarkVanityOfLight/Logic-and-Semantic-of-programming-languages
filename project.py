@@ -903,7 +903,6 @@ def test_case_2():
     return test.verify()
 
 
-# TODO: Cleanup and standarize testing
 print("Test truth table")
 a, b, c = Variable("afoobar"), Variable("bc"), Variable("cd")
 print(Implies(a, And(Not(b), c)).get_tt(pretty=True))
